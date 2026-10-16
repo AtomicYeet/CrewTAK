@@ -94,6 +94,13 @@ const first = (choresList.res || []).find(c => c.name.startsWith('Daily Truck'))
 if (first) {
   await api(`/chores/${first.id}/do`, { method: 'POST', body: JSON.stringify({ note: 'All good' }) }, token)
 }
+// Time a task with start -> complete so the log has a duration.
+const timed = (choresList.res || []).find(c => c.name.startsWith('Wash and Detail'))
+if (timed) {
+  await api(`/chores/${timed.id}/start`, { method: 'PUT' }, token)
+  await new Promise(r => setTimeout(r, 4000))
+  await api(`/chores/${timed.id}/do`, { method: 'POST', body: JSON.stringify({}) }, token)
+}
 
 // --- browser ----------------------------------------------------------------
 const browser = await chromium.launch()
@@ -108,6 +115,9 @@ page.on('console', m => m.type() === 'error' && consoleErrors.push(m.text()))
 page.on('pageerror', e => consoleErrors.push(`pageerror: ${e.message}`))
 
 await page.goto(`${BASE}/login`)
+await page.waitForTimeout(1500)
+await page.screenshot({ path: `${OUT}/00-login.png` })
+fs.writeFileSync(`${OUT}/00-login.txt`, await page.evaluate(() => document.body.innerText))
 await page.getByPlaceholder(/username/i).fill(USER.username)
 await page.getByPlaceholder(/password/i).fill(USER.password)
 await page.getByRole('button', { name: /sign in/i }).click()
@@ -164,7 +174,7 @@ await shot('15-mobile-tasks', '/chores')
 await shot('16-mobile-create', '/chores/create', { fullPage: true })
 
 // Words that should not appear anywhere now.
-const forbidden = ['Priority', 'Labels', 'Points', 'Notifications', 'Require approval', 'Things', 'Adaptive', 'Yearly', 'Donetick', 'Attachment', 'Privacy settings', 'Scheduling']
+const forbidden = ['Privacy Policy', 'Terms of', 'Priority', 'Labels', 'Points', 'Notifications', 'Require approval', 'Things', 'Adaptive', 'Yearly', 'Donetick', 'Attachment', 'Privacy settings', 'Scheduling']
 for (const f of fs.readdirSync(OUT).filter(f => f.endsWith('.txt'))) {
   const txt = fs.readFileSync(`${OUT}/${f}`, 'utf8')
   const hits = forbidden.filter(w => txt.includes(w))
