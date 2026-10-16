@@ -419,6 +419,7 @@ func LoadConfig() *Config {
 
 	// Apply default values for fields with default tags
 	defaults.SetDefaults(&config)
+	crewtakStorageDefaults(&config.Storage)
 
 	fmt.Printf("--ConfigLoad name : %s ", config.Name)
 
@@ -554,5 +555,32 @@ func (c *LogConfig) ParseLogLevel() zapcore.Level {
 		return zapcore.FatalLevel
 	default:
 		return zapcore.InfoLevel
+	}
+}
+
+// crewtakStorageDefaults makes uploads (crew/profile photos) work out of the
+// box. Upstream falls back to S3 when storage_type is unset, which fails on a
+// self-hosted box with no bucket ("MissingRegion"). CrewTAK instead stores
+// files on disk next to the SQLite database, so they live on the same
+// persisted volume.
+func crewtakStorageDefaults(s *StorageConfig) {
+	if s.StorageType == "" && s.BucketName == "" {
+		s.StorageType = "local"
+	}
+	if s.StorageType != "local" {
+		return
+	}
+	if s.BasePath == "" {
+		base := "uploads"
+		if dbPath := os.Getenv("DT_SQLITE_PATH"); dbPath != "" {
+			base = filepath.Join(filepath.Dir(dbPath), "uploads")
+		}
+		s.BasePath = base
+	}
+	if s.MaxFileSize == 0 {
+		s.MaxFileSize = 10 << 20 // 10 MB
+	}
+	if s.MaxUserStorage == 0 {
+		s.MaxUserStorage = 1 << 30 // 1 GB
 	}
 }

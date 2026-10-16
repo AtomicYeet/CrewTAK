@@ -102,6 +102,44 @@ if (timed) {
   await api(`/chores/${timed.id}/do`, { method: 'POST', body: JSON.stringify({}) }, token)
 }
 
+// Undo: complete a task, then undo it straight away.
+const undoTarget = (choresList.res || []).find(c => c.name.startsWith('Take out Station'))
+if (undoTarget) {
+  await api(`/chores/${undoTarget.id}/do`, { method: 'POST', body: JSON.stringify({}) }, token)
+  const undo = await api(`/chores/${undoTarget.id}/undo`, { method: 'POST', body: '{}' }, token)
+  const after = await api(`/chores/${undoTarget.id}`, {}, token)
+  log('UNDO result:', JSON.stringify(undo).slice(0, 120), '| due after undo:', after?.res?.nextDueDate, '| original due:', undoTarget.nextDueDate)
+}
+
+// Profile photo upload (1x1 PNG).
+{
+  const png = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+    'base64',
+  )
+  const fd = new FormData()
+  fd.append('file', new Blob([png], { type: 'image/png' }), 'photo.PNG')
+  const res = await fetch(`${BASE}/api/v1/users/profile_photo`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: fd,
+  })
+  const body = await res.text()
+  log('PHOTO upload:', res.status, body.slice(0, 160))
+  const sign = (() => {
+    try {
+      return JSON.parse(body).sign
+    } catch {
+      return null
+    }
+  })()
+  if (sign) {
+    const url = sign.startsWith('http') ? sign : `${BASE}/api/v1/assets/${sign.replace(/^\/+/, '')}`
+    const img = await fetch(url)
+    log('PHOTO fetch:', img.status, img.headers.get('content-type'), url.replace(/sig=[^&]+/, 'sig=…'))
+  }
+}
+
 // --- browser ----------------------------------------------------------------
 const browser = await chromium.launch()
 const context = await browser.newContext({
@@ -170,6 +208,7 @@ await shot('07b-log-entry', null, {
 await page.keyboard.press('Escape')
 await shot('08-settings', '/settings', { fullPage: true })
 await shot('08b-crew-settings', '/settings/circle', { fullPage: true })
+await shot('08c-profile', '/settings/profile', { fullPage: true })
 await shot('09-activities', '/activities', { fullPage: true })
 await shot('10-hidden-route-points', '/points')
 await shot('11-hidden-route-things', '/things')

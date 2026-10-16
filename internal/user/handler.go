@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"html"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -1289,9 +1290,11 @@ func (h *Handler) updateProfilePhoto(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid file"})
 		return
 	}
-	fileExtension := file.Filename[strings.LastIndex(file.Filename, "."):]
+	// CrewTAK: case-insensitive (phones often send ".JPG") and safe when the
+	// name has no extension.
+	fileExtension := strings.ToLower(filepath.Ext(file.Filename))
 	// validate file extension:
-	if fileExtension != ".jpg" && fileExtension != ".jpeg" && fileExtension != ".png" {
+	if fileExtension != ".jpg" && fileExtension != ".jpeg" && fileExtension != ".png" && fileExtension != ".webp" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid file extension"})
 		return
 	}

@@ -1527,10 +1527,13 @@ func (r *ChoreRepository) GetChoresHistoryByCircle(c context.Context, circleID i
 // GetUserLastChoreAction gets the user's most recent action on a chore (within time limit)
 func (r *ChoreRepository) GetUserLastChoreAction(c context.Context, choreID int, userID int, timeLimit time.Duration) (*chModel.ChoreHistory, error) {
 	var history chModel.ChoreHistory
-	cutoffTime := time.Now().UTC().Add(-timeLimit)
 
+	// CrewTAK: the time window is checked in Go rather than SQL. With SQLite,
+	// created_at is stored as text in the server's local zone (autoCreateTime
+	// uses time.Now()), so comparing it to a UTC cutoff string never matched
+	// when TZ was set and undo always failed.
 	err := r.db.WithContext(c).
-		Where("chore_id = ? AND completed_by = ? AND created_at > ?", choreID, userID, cutoffTime).
+		Where("chore_id = ? AND completed_by = ?", choreID, userID).
 		Where("status IN (?)", []chModel.ChoreHistoryStatus{
 			chModel.ChoreHistoryStatusCompleted,
 			chModel.ChoreHistoryStatusSkipped,
@@ -1542,6 +1545,9 @@ func (r *ChoreRepository) GetUserLastChoreAction(c context.Context, choreID int,
 
 	if err != nil {
 		return nil, err
+	}
+	if time.Since(history.CreatedAt) > timeLimit {
+		return nil, gorm.ErrRecordNotFound
 	}
 	return &history, nil
 }
