@@ -118,7 +118,7 @@ log('after login url:', page.url())
 const shot = async (name, path, opts = {}) => {
   if (path) await page.goto(`${BASE}${path}`)
   await page.waitForTimeout(opts.wait ?? 2500)
-  if (opts.before) await opts.before()
+  if (opts.before) await opts.before().catch(e => log(`  before() failed: ${e.message}`))
   await page.screenshot({ path: `${OUT}/${name}.png`, fullPage: opts.fullPage ?? false })
   const text = await page.evaluate(() => document.body.innerText)
   fs.writeFileSync(`${OUT}/${name}.txt`, `URL: ${page.url()}\n\n${text}`)
@@ -130,8 +130,12 @@ await shot('02-tasks', '/chores')
 await shot('03-create', '/chores/create', { fullPage: true })
 await shot('04-create-custom-repeat', null, {
   before: async () => {
-    await page.getByText('Repeating task', { exact: false }).first().click().catch(() => {})
-    await page.waitForTimeout(500)
+    await page.getByRole('combobox', { name: /schedule type/i }).first().click()
+    await page.getByRole('option', { name: /repeating task/i }).click()
+    await page.waitForTimeout(600)
+    // Show the custom options too (interval / days of week / day of month).
+    await page.getByText('Custom', { exact: true }).first().click().catch(() => {})
+    await page.waitForTimeout(600)
   },
   fullPage: true,
   wait: 300,
