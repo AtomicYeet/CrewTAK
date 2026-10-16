@@ -160,7 +160,16 @@ await shot('06b-task-menu', null, {
   wait: 200,
 })
 await shot('07-log', '/log')
+await shot('07b-log-entry', null, {
+  before: async () => {
+    await page.locator('tbody tr').filter({ hasText: 'Daily Truck' }).first().click()
+    await page.waitForTimeout(700)
+  },
+  wait: 200,
+})
+await page.keyboard.press('Escape')
 await shot('08-settings', '/settings', { fullPage: true })
+await shot('08b-crew-settings', '/settings/circle', { fullPage: true })
 await shot('09-activities', '/activities', { fullPage: true })
 await shot('10-hidden-route-points', '/points')
 await shot('11-hidden-route-things', '/things')

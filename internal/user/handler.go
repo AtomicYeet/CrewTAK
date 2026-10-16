@@ -188,7 +188,7 @@ func (h *Handler) signUp(c *gin.Context) {
 		}
 	} else {
 		userCircle, err = h.circleRepo.CreateCircle(c, &cModel.Circle{
-			Name:       signupReq.DisplayName + "'s circle",
+			Name:       signupReq.DisplayName + "'s crew", // CrewTAK
 			CreatedAt:  time.Now().UTC(),
 			UpdatedAt:  time.Now().UTC(),
 			InviteCode: utils.GenerateInviteCode(c),
@@ -360,7 +360,7 @@ func (h *Handler) thirdPartyAuthCallback(c *gin.Context) {
 			}
 			// Create Circle for the user:
 			userCircle, err := h.circleRepo.CreateCircle(c, &cModel.Circle{
-				Name:       userinfo.GivenName + "'s circle",
+				Name:       userinfo.GivenName + "'s crew", // CrewTAK
 				CreatedAt:  time.Now().UTC(),
 				UpdatedAt:  time.Now().UTC(),
 				InviteCode: utils.GenerateInviteCode(c),
@@ -532,7 +532,7 @@ func (h *Handler) thirdPartyAuthCallback(c *gin.Context) {
 
 			// Create Circle for the user
 			userCircle, err := h.circleRepo.CreateCircle(c, &cModel.Circle{
-				Name:       displayName + "'s circle",
+				Name:       displayName + "'s crew", // CrewTAK
 				CreatedAt:  time.Now().UTC(),
 				UpdatedAt:  time.Now().UTC(),
 				InviteCode: utils.GenerateInviteCode(c),
@@ -744,7 +744,7 @@ func (h *Handler) thirdPartyAuthCallback(c *gin.Context) {
 			} else {
 				// Default: create a personal circle for the new user.
 				userCircle, err := h.circleRepo.CreateCircle(c, &cModel.Circle{
-					Name:       claims.DisplayName + "'s circle",
+					Name:       claims.DisplayName + "'s crew", // CrewTAK
 					CreatedAt:  time.Now().UTC(),
 					UpdatedAt:  time.Now().UTC(),
 					InviteCode: utils.GenerateInviteCode(c),
