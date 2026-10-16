@@ -1,0 +1,57 @@
+URL: http://localhost:2021/home
+
+2 tasks need attention.
+2
+Overdue
+2
+Coming up
+
+Overdue
+
+View all
+Start
+Skip
+
+Crash Phone Test with ATCT
+
+2 days ago
+Daily • Anyone
+Schedule
+Edit
+Delete
+Start
+Skip
+
+Take out Station Garbages
+
+2 hours ago
+Daily • Anyone
+Schedule
+Edit
+Delete
+
+Coming up
+
+View all
+Start
+Skip
+
+Daily Truck Inspections/SCBA Inspections
+
+Tomorrow 11:59 PM
+Daily • Anyone
+Schedule
+Edit
+Delete
+Start
+Skip
+
+Water Softener Salt Check
+
+Tomorrow 11:59 PM
+Weekly • Anyone
+Schedule
+Edit
+Delete
+
+Add a task…

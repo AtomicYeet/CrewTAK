@@ -1,0 +1,216 @@
+--ConfigLoad config for environment: selfhosted
+Config file not found, generating default config...
+Generated default config at config/selfhosted.yaml
+[Fx] PROVIDE	fx.Lifecycle <= go.uber.org/fx.New.func1()
+[Fx] PROVIDE	fx.Shutdowner <= go.uber.org/fx.(*App).shutdowner-fm()
+[Fx] PROVIDE	fx.DotGraph <= go.uber.org/fx.(*App).dotGraph-fm()
+[Fx] SUPPLY	*config.Config
+[Fx] SUPPLY	*zap.Logger
+[Fx] PROVIDE	*jwt.GinJWTMiddleware <= donetick.com/core/internal/auth.NewAuthMiddleware()
+[Fx] PROVIDE	gin.HandlerFunc <= donetick.com/core/internal/auth.APITokenMiddleware()
+[Fx] PROVIDE	*auth.MultiAuthMiddleware <= donetick.com/core/internal/auth.NewMultiAuthMiddleware()
+[Fx] PROVIDE	*auth.IdentityProvider <= donetick.com/core/internal/auth.NewIdentityProvider()
+[Fx] PROVIDE	*resource.Handler <= donetick.com/core/internal/resource.NewHandler()
+[Fx] PROVIDE	*gorm.DB <= donetick.com/core/internal/database.NewDatabase()
+[Fx] PROVIDE	*chore.ChoreRepository <= donetick.com/core/internal/chore/repo.NewChoreRepository()
+[Fx] PROVIDE	*chore.Handler <= donetick.com/core/internal/chore.NewHandler()
+[Fx] PROVIDE	*calendar.Handler <= donetick.com/core/internal/calendar.NewHandler()
+[Fx] PROVIDE	*repo.CalendarRepository <= donetick.com/core/internal/calendar/repo.NewCalendarRepository()
+[Fx] PROVIDE	*user.UserRepository <= donetick.com/core/internal/user/repo.NewUserRepository()
+[Fx] PROVIDE	*user.DeletionService <= donetick.com/core/internal/user.NewDeletionService()
+[Fx] PROVIDE	*user.Handler <= donetick.com/core/internal/user.NewHandler()
+[Fx] PROVIDE	*repo.CircleRepository <= donetick.com/core/internal/circle/repo.NewCircleRepository()
+[Fx] PROVIDE	*circle.Handler <= donetick.com/core/internal/circle.NewHandler()
+[Fx] PROVIDE	*device.DeviceRepository <= donetick.com/core/internal/device/repo.NewDeviceRepository()
+[Fx] PROVIDE	*device.Handler <= donetick.com/core/internal/device.NewHandler()
+[Fx] PROVIDE	bridge.CoreConfig <= main.main.func1()
+[Fx] PROVIDE	*bridge.SettingsRepository <= donetick.com/core/internal/bridge.NewSettingsRepository()
+[Fx] PROVIDE	*bridge.Service <= donetick.com/core/internal/bridge.NewService()
+[Fx] PROVIDE	*bridge.Handler <= donetick.com/core/internal/bridge.NewHandler()
+[Fx] PROVIDE	*user.NotificationRepository <= donetick.com/core/internal/notifier/repo.NewNotificationRepository()
+[Fx] PROVIDE	*service.NotificationPlanner <= donetick.com/core/internal/notifier/service.NewNotificationPlanner()
+[Fx] PROVIDE	*pushover.Pushover <= donetick.com/core/internal/notifier/service/pushover.NewPushover()
+[Fx] PROVIDE	*telegram.TelegramNotifier <= donetick.com/core/internal/notifier/service/telegram.NewTelegramNotifier()
+[Fx] PROVIDE	*discord.DiscordNotifier <= donetick.com/core/internal/notifier/service/discord.NewDiscordNotifier()
+[Fx] PROVIDE	*bridgenotifier.BridgeNotifier <= donetick.com/core/internal/notifier/service/bridgenotifier.NewBridgeNotifier()
+[Fx] PROVIDE	*notifier.Notifier <= donetick.com/core/internal/notifier.NewNotifier()
+[Fx] PROVIDE	*events.EventsProducer <= donetick.com/core/internal/events.NewEventsProducer()
+[Fx] PROVIDE	*fcm.FCMNotifier <= donetick.com/core/internal/notifier/service/fcm.NewFCMNotifier()
+[Fx] PROVIDE	*push.Sender <= donetick.com/core/internal/notifier/push.NewSender()
+[Fx] PROVIDE	*limiter.Limiter <= donetick.com/core/internal/utils.NewRateLimiter()
+[Fx] PROVIDE	email.Sender <= donetick.com/core/internal/email.NewSender()
+[Fx] PROVIDE	*mfa.MFAService <= donetick.com/core/internal/mfa.NewService()
+[Fx] PROVIDE	*mfa.CleanupService <= donetick.com/core/internal/mfa.NewCleanupService()
+[Fx] PROVIDE	*auth.TokenService <= donetick.com/core/internal/auth.NewTokenService()
+[Fx] PROVIDE	*auth.CleanupService <= donetick.com/core/internal/auth.NewCleanupService()
+[Fx] PROVIDE	*apple.AppleService <= donetick.com/core/internal/auth/apple.NewAppleService()
+[Fx] PROVIDE	*gin.Engine <= main.newServer()
+[Fx] PROVIDE	*notifier.Scheduler <= donetick.com/core/internal/notifier.NewScheduler()
+[Fx] PROVIDE	*chore.ThingRepository <= donetick.com/core/internal/thing/repo.NewThingRepository()
+[Fx] PROVIDE	*points.PointsRepository <= donetick.com/core/internal/points/repo.NewPointsRepository()
+[Fx] PROVIDE	*repo.SubTasksRepository <= donetick.com/core/internal/subtask/repo.NewSubTasksRepository()
+[Fx] PROVIDE	*chore.LabelRepository <= donetick.com/core/internal/label/repo.NewLabelRepository()
+[Fx] PROVIDE	*label.Handler <= donetick.com/core/internal/label.NewHandler()
+[Fx] PROVIDE	*repo.RewardRepository <= donetick.com/core/internal/reward/repo.NewRewardRepository()
+[Fx] PROVIDE	*reward.Handler <= donetick.com/core/internal/reward.NewHandler()
+[Fx] PROVIDE	*repo.ProjectRepository <= donetick.com/core/internal/project/repo.NewProjectRepository()
+[Fx] PROVIDE	*project.Handler <= donetick.com/core/internal/project.NewHandler()
+[Fx] PROVIDE	*repo.FilterRepository <= donetick.com/core/internal/filter/repo.NewFilterRepository()
+[Fx] PROVIDE	*filter.Handler <= donetick.com/core/internal/filter.NewHandler()
+[Fx] PROVIDE	*thing.API <= donetick.com/core/internal/thing.NewAPI()
+[Fx] PROVIDE	*thing.Handler <= donetick.com/core/internal/thing.NewHandler()
+[Fx] PROVIDE	*service.StripeService <= donetick.com/core/external/payment/service.NewStripeService()
+[Fx] PROVIDE	database.StripeDB <= donetick.com/core/external/payment/repo.NewStripeDB()
+[Fx] PROVIDE	database.RevenueCatDB <= donetick.com/core/external/payment/repo.NewRevenueCatDB()
+[Fx] PROVIDE	database.SubscriptionDB <= donetick.com/core/external/payment/repo.NewSubscriptionDB()
+[Fx] PROVIDE	*payment.Handler <= donetick.com/core/external/payment.NewHandler()
+[Fx] PROVIDE	*payment.Webhook <= donetick.com/core/external/payment.NewWebhook()
+[Fx] PROVIDE	*chore.API <= donetick.com/core/internal/chore.NewAPI()
+[Fx] PROVIDE	*sync.SyncHandler <= donetick.com/core/internal/sync.NewHandler()
+[Fx] PROVIDE	*frontend.Handler <= donetick.com/core/frontend.NewHandler()
+[Fx] PROVIDE	*docs.Handler <= donetick.com/core/docs.NewHandler()
+[Fx] PROVIDE	storage.Storage <= donetick.com/core/internal/storage.NewStorage()
+[Fx] PROVIDE	storage.URLSigner <= donetick.com/core/internal/storage.NewURLSigner()
+[Fx] PROVIDE	*storage.Handler <= donetick.com/core/internal/storage.NewHandler()
+[Fx] PROVIDE	*storage.DraftCleanupService <= donetick.com/core/internal/storage.NewDraftCleanupService()
+[Fx] PROVIDE	*repo.StorageRepository <= donetick.com/core/internal/storage/repo.NewStorageRepository()
+[Fx] PROVIDE	*realtime.RealTimeService <= donetick.com/core/internal/realtime.NewRealTimeService()
+[Fx] PROVIDE	*realtime.TicketStore <= donetick.com/core/internal/realtime.NewTicketStore()
+[Fx] PROVIDE	*realtime.AuthMiddleware <= donetick.com/core/internal/realtime.NewAuthMiddleware()
+[Fx] PROVIDE	*realtime.PollingHandler <= donetick.com/core/internal/realtime.NewPollingHandler()
+[Fx] INVOKE		donetick.com/core/internal/chore.Routes()
+[Fx] RUN	provide: go.uber.org/fx.New.func1()
+[Fx] RUN	supply: stub(*config.Config)
+[Fx] RUN	provide: donetick.com/core/internal/database.NewDatabase()
+[Fx] RUN	provide: donetick.com/core/internal/user/repo.NewUserRepository()
+[Fx] RUN	provide: donetick.com/core/internal/chore/repo.NewChoreRepository()
+--ConfigLoad name : selfhosted Error creating bot:  Not Found
+[Fx] RUN	provide: donetick.com/core/internal/notifier/service/telegram.NewTelegramNotifier()
+[Fx] RUN	provide: donetick.com/core/internal/notifier/service/pushover.NewPushover()
+[Fx] RUN	provide: donetick.com/core/internal/events.NewEventsProducer()
+[Fx] RUN	provide: donetick.com/core/internal/notifier/service/discord.NewDiscordNotifier()
+[Fx] RUN	provide: donetick.com/core/internal/notifier/service/fcm.NewFCMNotifier()
+[Fx] RUN	provide: main.main.func1()
+[Fx] RUN	provide: donetick.com/core/internal/bridge.NewSettingsRepository()
+
+2026/10/15 22:29:00 [31;1m/usr/src/app/internal/bridge/settings_repo.go:27 [35;1mSQL logic error: no such table: bridge_settings (1)
+[0m[33m[0.408ms] [34;1m[rows:0][0m SELECT * FROM `bridge_settings` WHERE `bridge_settings`.`id` = ? ORDER BY `bridge_settings`.`id` LIMIT 1
+[Fx] RUN	provide: donetick.com/core/internal/bridge.NewService()
+[Fx] RUN	provide: donetick.com/core/internal/device/repo.NewDeviceRepository()
+[Fx] RUN	provide: donetick.com/core/internal/notifier/service/bridgenotifier.NewBridgeNotifier()
+[Fx] RUN	provide: donetick.com/core/internal/notifier.NewNotifier()
+[Fx] RUN	provide: donetick.com/core/internal/notifier/repo.NewNotificationRepository()
+[Fx] RUN	provide: donetick.com/core/internal/notifier.NewScheduler()
+[Fx] RUN	provide: donetick.com/core/internal/mfa.NewCleanupService()
+[Fx] RUN	provide: donetick.com/core/internal/auth.NewCleanupService()
+[Fx] RUN	provide: donetick.com/core/internal/realtime.NewRealTimeService()
+[Fx] RUN	provide: donetick.com/core/internal/storage.NewStorage()
+[Fx] RUN	provide: donetick.com/core/internal/storage/repo.NewStorageRepository()
+[Fx] RUN	provide: donetick.com/core/internal/storage.NewDraftCleanupService()
+[Fx] RUN	provide: donetick.com/core/internal/realtime.NewTicketStore()
+[Fx] RUN	provide: main.newServer()
+[Fx] RUN	provide: donetick.com/core/internal/circle/repo.NewCircleRepository()
+[Fx] RUN	provide: donetick.com/core/internal/notifier/service.NewNotificationPlanner()
+[Fx] RUN	provide: donetick.com/core/internal/thing/repo.NewThingRepository()
+[Fx] RUN	provide: donetick.com/core/internal/label/repo.NewLabelRepository()
+[Fx] RUN	provide: donetick.com/core/internal/subtask/repo.NewSubTasksRepository()
+[Fx] RUN	provide: donetick.com/core/internal/storage.NewURLSigner()
+[Fx] RUN	provide: donetick.com/core/internal/chore.NewHandler()
+[Fx] RUN	provide: donetick.com/core/internal/mfa.NewService()
+[Fx] RUN	provide: donetick.com/core/internal/auth.NewAuthMiddleware()
+[Fx] RUN	provide: donetick.com/core/internal/auth.NewMultiAuthMiddleware()
+[Fx] INVOKE		donetick.com/core/internal/calendar.Routes()
+[Fx] RUN	provide: donetick.com/core/internal/calendar/repo.NewCalendarRepository()
+[Fx] RUN	provide: donetick.com/core/internal/calendar.NewHandler()
+[Fx] RUN	provide: donetick.com/core/internal/utils.NewRateLimiter()
+[Fx] INVOKE		donetick.com/core/internal/chore.APIs()
+[Fx] RUN	provide: donetick.com/core/internal/project/repo.NewProjectRepository()
+[Fx] RUN	provide: donetick.com/core/internal/chore.NewAPI()
+[Fx] INVOKE		donetick.com/core/internal/user.Routes()
+[Fx] RUN	provide: donetick.com/core/internal/auth.NewTokenService()
+[Fx] RUN	provide: donetick.com/core/internal/email.NewSender()
+[Fx] RUN	provide: donetick.com/core/internal/auth.NewIdentityProvider()
+[Fx] RUN	provide: donetick.com/core/internal/auth/apple.NewAppleService()
+[Fx] RUN	provide: donetick.com/core/internal/user.NewDeletionService()
+[Fx] RUN	provide: donetick.com/core/internal/user.NewHandler()
+[Fx] INVOKE		donetick.com/core/internal/circle.Routes()
+[Fx] RUN	provide: donetick.com/core/internal/points/repo.NewPointsRepository()
+[Fx] RUN	provide: donetick.com/core/internal/notifier/push.NewSender()
+[Fx] RUN	provide: donetick.com/core/internal/circle.NewHandler()
+2026/10/15 22:29:00 Registering circle routes
+[Fx] INVOKE		donetick.com/core/internal/device.Routes()
+[Fx] RUN	provide: donetick.com/core/internal/device.NewHandler()
+[Fx] INVOKE		donetick.com/core/internal/bridge.Routes()
+[Fx] RUN	provide: donetick.com/core/internal/bridge.NewHandler()
+[Fx] INVOKE		donetick.com/core/internal/thing.Routes()
+[Fx] RUN	provide: donetick.com/core/internal/thing.NewHandler()
+[Fx] INVOKE		donetick.com/core/internal/thing.APIs()
+[Fx] RUN	provide: donetick.com/core/internal/thing.NewAPI()
+[Fx] INVOKE		donetick.com/core/internal/label.Routes()
+[Fx] RUN	provide: donetick.com/core/internal/label.NewHandler()
+[Fx] INVOKE		donetick.com/core/internal/reward.Routes()
+[Fx] RUN	provide: donetick.com/core/internal/reward/repo.NewRewardRepository()
+[Fx] RUN	provide: donetick.com/core/internal/reward.NewHandler()
+[Fx] INVOKE		donetick.com/core/internal/project.Routes()
+[Fx] RUN	provide: donetick.com/core/internal/project.NewHandler()
+[Fx] INVOKE		donetick.com/core/internal/filter.Routes()
+[Fx] RUN	provide: donetick.com/core/internal/filter/repo.NewFilterRepository()
+[Fx] RUN	provide: donetick.com/core/internal/filter.NewHandler()
+[Fx] INVOKE		donetick.com/core/internal/storage.Routes()
+[Fx] RUN	provide: donetick.com/core/internal/storage.NewHandler()
+[Fx] INVOKE		donetick.com/core/frontend.Routes()
+[Fx] RUN	provide: donetick.com/core/frontend.NewHandler()
+[Fx] INVOKE		donetick.com/core/docs.Routes()
+[Fx] RUN	provide: donetick.com/core/docs.NewHandler()
+[Fx] INVOKE		donetick.com/core/internal/resource.Routes()
+[Fx] RUN	provide: donetick.com/core/internal/resource.NewHandler()
+[Fx] INVOKE		donetick.com/core/external/payment.Routes()
+[Fx] RUN	provide: donetick.com/core/external/payment/repo.NewStripeDB()
+[Fx] RUN	provide: donetick.com/core/external/payment/repo.NewSubscriptionDB()
+[Fx] RUN	provide: donetick.com/core/external/payment/service.NewStripeService()
+[Fx] RUN	provide: donetick.com/core/external/payment.NewHandler()
+[Fx] INVOKE		donetick.com/core/external/payment.Webhooks()
+[Fx] RUN	provide: donetick.com/core/external/payment/repo.NewRevenueCatDB()
+[Fx] RUN	provide: donetick.com/core/external/payment.NewWebhook()
+[Fx] INVOKE		donetick.com/core/internal/sync.Routes()
+[Fx] RUN	provide: donetick.com/core/internal/sync.NewHandler()
+[Fx] INVOKE		donetick.com/core/internal/realtime.Routes()
+[Fx] RUN	provide: donetick.com/core/internal/realtime.NewAuthMiddleware()
+[Fx] RUN	provide: donetick.com/core/internal/realtime.NewPollingHandler()
+[Fx] INVOKE		main.main.func2()
+[Fx] HOOK OnStart		main.newServer.func2() executing (caller: main.newServer)
+{"level":"info","ts":"2026-10-15T22:29:00.583-0500","caller":"migrations/base.go:68","msg":"Applying migration: 20241123_migrate_label_to_labels_v2"}
+{"level":"info","ts":"2026-10-15T22:29:00.584-0500","caller":"migrations/base.go:68","msg":"Applying migration: 20241212_migrate_chat_id_to_notification_target"}
+{"level":"info","ts":"2026-10-15T22:29:00.589-0500","caller":"migrations/base.go:68","msg":"Applying migration: 20250314_fix_notification_metadata_experiment_modal"}
+{"level":"info","ts":"2026-10-15T22:29:00.590-0500","caller":"migrations/base.go:68","msg":"Applying migration: 20250406_.frequency_metadata_v2_and_notification_metadata_v2_migration"}
+{"level":"info","ts":"2026-10-15T22:29:00.590-0500","caller":"migrations/20250406_frequency_metadata_v2_and_notification_metadata_v2.go:37","msg":"Skipping migration 20250406_.frequency_metadata_v2_and_notification_metadata_v2_migration as no legacy columns found in the chores table"}
+{"level":"info","ts":"2026-10-15T22:29:00.592-0500","caller":"migrations/base.go:68","msg":"Applying migration: 20250528_repurpose_completed_at_to_performed_at"}
+{"level":"info","ts":"2026-10-15T22:29:00.592-0500","caller":"migrations/20250528_repurpose_completed_at_to_performed_at.go:98","msg":"No completed_at column found, handling fresh installation"}
+{"level":"info","ts":"2026-10-15T22:29:00.592-0500","caller":"migrations/20250528_repurpose_completed_at_to_performed_at.go:115","msg":"Fresh installation migration completed"}
+{"level":"info","ts":"2026-10-15T22:29:00.593-0500","caller":"migrations/base.go:68","msg":"Applying migration: 20250622_migrate_notification_templates"}
+{"level":"info","ts":"2026-10-15T22:29:00.594-0500","caller":"migrations/base.go:68","msg":"Applying migration: 20250825_set_existing_chores_private"}
+{"level":"info","ts":"2026-10-15T22:29:00.594-0500","caller":"migrations/20250825_set_existing_chores_private.go:58","msg":"Successfully set is_private to true for 0 chores"}
+{"level":"info","ts":"2026-10-15T22:29:00.595-0500","caller":"migrations/base.go:68","msg":"Applying migration: 20251025_migrate_nth_day_of_month_to_week_of_month"}
+{"level":"info","ts":"2026-10-15T22:29:00.597-0500","caller":"migrations/base.go:68","msg":"Applying migration: 20260511_backfill_sync_versions_for_existing_data"}
+{"level":"info","ts":"2026-10-15T22:29:00.597-0500","caller":"migrations/20260511_backfill_sync_versions_for_existing_data.go:207","msg":"Sync backfill completed: chores=0 histories=0 tombstones=0"}
+{"level":"info","ts":"2026-10-15T22:29:00.598-0500","caller":"migrations/base.go:68","msg":"Applying migration: 20260719_drop_api_token_name_unique"}
+{"level":"info","ts":"2026-10-15T22:29:00.598-0500","caller":"migrations/20260719_drop_api_token_name_unique.go:92","msg":"api_tokens.name has no unique constraint or index; nothing to do"}
+{"level":"info","ts":"2026-10-15T22:29:00.600-0500","caller":"migrations/base.go:68","msg":"Applying migration: 20261016_crewtak_rename_circles_to_crews"}
+{"level":"info","ts":"2026-10-15T22:29:00.601-0500","caller":"migrations/base.go:97","msg":"Migrations: 11 successful, 0 failed, 0 skipped, 11 total in registry"}
+Applied 0 migrations!
+{"level":"info","ts":"2026-10-15T22:29:00.605-0500","caller":"mfa/cleanup.go:27","msg":"MFA cleanup service started"}
+{"level":"info","ts":"2026-10-15T22:29:00.605-0500","caller":"auth/cleanup.go:27","msg":"Auth session cleanup service started"}
+{"level":"info","ts":"2026-10-15T22:29:00.605-0500","caller":"storage/cleanup.go:30","msg":"Draft attachment cleanup service started"}
+{"level":"info","ts":"2026-10-15T22:29:00.605-0500","caller":"realtime/service.go:72","msg":"Starting real-time service"}
+{"level":"info","ts":"2026-10-15T22:29:00.605-0500","caller":"realtime/service.go:83","msg":"Real-time service started","websocket_enabled":true,"max_connections":1000}
+[Fx] HOOK OnStart		main.newServer.func2() called by main.newServer ran successfully in 565.379928ms
+[Fx] RUNNING
+
+2026/10/15 22:29:30 [31;1m/usr/src/app/internal/chore/repo/repository.go:861 [35;1mrecord not found
+[0m[33m[0.096ms] [34;1m[rows:0][0m SELECT * FROM `chore_histories` WHERE chore_id = ? AND status = ?  ORDER BY `chore_histories`.`id` LIMIT 1
+
+2026/10/15 22:29:34 [31;1m/usr/src/app/internal/chore/repo/repository.go:861 [35;1mrecord not found
+[0m[33m[0.127ms] [34;1m[rows:0][0m SELECT * FROM `chore_histories` WHERE chore_id = ? AND status = ?  ORDER BY `chore_histories`.`id` LIMIT 1
+
+2026/10/15 22:29:36 [32m/usr/src/app/internal/user/repo/repository.go:386 [33mSLOW SQL >= 200ms
+[0m[31;1m[309.401ms] [33m[rows:1][35m INSERT INTO `user_sessions` (`id`,`user_id`,`token_hash`,`family_id`,`created_at`,`expires_at`,`used_at`,`revoked_at`) VALUES (?,?,?,?,?,?,?,?)[0m

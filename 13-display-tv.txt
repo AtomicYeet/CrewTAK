@@ -1,0 +1,52 @@
+URL: http://localhost:2021/display
+
+Crew
+TAK
+
+22:31
+
+Thursday 15 October
+
+C SHIFT · DAY 2
+
+8 Hours and 29 Minutes until shift change
+
+OVERDUE
+
+2
+
+Crash Phone Test with ATCT
+
+Yest. 10:00
+
+Take out Station Garbages
+
+21:00
+
+DUE TODAY
+
+0
+
+All of today's tasks are done.
+
+TOMORROW
+
+Daily Truck Inspections/SCBA Inspections
+
+Fri 16 Oct
+
+Water Softener Salt Check
+
+Fri 16 Oct
+
+DONE THIS SHIFT
+
+2
+
+Wash and Detail Airport 5132
+
+Crew Test · 22:29
+
+Daily Truck Inspections/SCBA Inspections
+
+Crew Test · 22:29

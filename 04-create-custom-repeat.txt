@@ -1,0 +1,58 @@
+URL: http://localhost:2021/chores/create
+
+Create task
+Unsaved
+
+Name
+
+Schedule
+
+Daily · 15 Oct
+
+Choose when this task is due and whether it repeats.
+
+Schedule type
+Repeating task
+Repeats
+Daily
+Weekly
+Monthly
+Always
+Custom
+
+First due date
+Date
+Remove due date
+Time
+Add a time
+
+Assignment
+
+Anyone in your crew
+
+Assign to
+
+Choose who can be assigned this task.
+
+Anyone
+C
+Crew Test
+This assignment matches your default for new tasks in this browser.
+
+Description
+
+Instructions and notes
+
+
+
+
+Subtasks
+
+A checklist of steps to complete this task
+
+Task Window
+
+Define when this task can be completed and when it expires
+
+Cancel
+Create

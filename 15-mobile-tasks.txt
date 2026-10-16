@@ -1,0 +1,96 @@
+URL: http://localhost:2021/chores
+
+Tasks
+
+0 tasks selected
+
+All
+Close
+Complete
+Due
+Skip
+Move
+Archive
+Delete
+More
+Overdue
+2
+Start
+Skip
+2 days ago
+Daily
+C
+
+Crash Phone Test with ATCT
+
+Anyone
+Schedule
+Edit
+Delete
+Start
+Skip
+2 hours ago
+Daily
+T
+
+Take out Station Garbages
+
+Anyone
+Schedule
+Edit
+Delete
+Tomorrow
+2
+Start
+Skip
+Tomorrow 11:59 PM
+Daily
+D
+
+Daily Truck Inspections/SCBA Inspections
+
+Anyone
+Schedule
+Edit
+Delete
+Start
+Skip
+Tomorrow 11:59 PM
+Weekly
+W
+
+Water Softener Salt Check
+
+Anyone
+Schedule
+Edit
+Delete
+Next 7 Days
+2
+Start
+Skip
+in 3 days
+5
+
+5133 MEDBAG Check
+
+Anyone
+Schedule
+Edit
+Delete
+Start
+Skip
+in 7 days
+Weekly
+W
+
+Wash and Detail Airport 5132
+
+Anyone
+Schedule
+Edit
+Delete
+Overview
+Tasks
+Search
+More

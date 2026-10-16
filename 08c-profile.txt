@@ -1,0 +1,16 @@
+URL: http://localhost:2021/settings/profile
+
+Profile Settings
+
+Update your display name and profile photo.
+
+Crew Test
+
+crewtest
+
+Change Photo
+Display Name
+ *
+Timezone
+ *
+Save

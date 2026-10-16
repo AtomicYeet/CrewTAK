@@ -1,0 +1,29 @@
+login ok: true
+created chores: [1,2,3,4,5,6]
+UNDO result: {"message":"Successfully undid completion action","res":{"completionActions":null,"id":4,"name":"Take out Station Garbag | due after undo: 2026-10-16T02:00:00Z | original due: 2026-10-16T02:00:00Z
+PHOTO upload: 200 {"sign":"profiles/1/482ad10a-b031-47ea-896e-a12d68b4cff2.png"}
+PHOTO fetch: 200 image/png http://localhost:2021/api/v1/assets/profiles/1/482ad10a-b031-47ea-896e-a12d68b4cff2.png
+after login url: http://localhost:2021/home
+shot 01-home: http://localhost:2021/home
+shot 02-tasks: http://localhost:2021/chores
+shot 03-create: http://localhost:2021/chores/create
+shot 04-create-custom-repeat: http://localhost:2021/chores/create
+shot 05-quick-add: http://localhost:2021/chores
+shot 06-task-view: http://localhost:2021/chores/1
+shot 06b-task-menu: http://localhost:2021/chores/1
+shot 07-log: http://localhost:2021/log
+shot 07b-log-entry: http://localhost:2021/log
+shot 08-settings: http://localhost:2021/settings
+shot 08b-crew-settings: http://localhost:2021/settings/circle
+shot 08c-profile: http://localhost:2021/settings/profile
+shot 09-activities: http://localhost:2021/home
+shot 10-hidden-route-points: http://localhost:2021/home
+shot 11-hidden-route-things: http://localhost:2021/home
+shot 12-nav: http://localhost:2021/chores
+shot 13-display-tv: http://localhost:2021/display
+shot 14-display-tablet: http://localhost:2021/display
+shot 15-mobile-tasks: http://localhost:2021/chores
+shot 16-mobile-create: http://localhost:2021/chores/create
+TEXT CHECK 08b-crew-settings.txt: contains circle
+console errors: 1
+   pageerror: Transition was skipped. New ViewTransition started

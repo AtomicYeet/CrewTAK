@@ -1,0 +1,63 @@
+URL: http://localhost:2021/settings
+
+Settings
+
+Customize your experience and manage your account preferences
+
+Profile Settings
+
+Update your profile information, photo, display name, and timezone preferences.
+
+Crew Settings
+
+Manage your crew, invite members, and handle join requests.
+
+Account Settings
+
+Manage your subscription, change password, and account deletion options.
+
+Managed Accounts
+
+Create and manage sub accounts to log in and complete assigned tasks.
+
+Multi-Factor Authentication
+
+Add an extra layer of security with MFA using authenticator apps.
+
+API Tokens
+
+Generate and manage access tokens for third-party integrations and API access.
+
+Calendar Sync
+
+Subscribe to your tasks from Apple Calendar, Google Calendar, Outlook, or another calendar app.
+
+Storage Settings
+
+Backup and restore your data, manage local storage and sync preferences.
+
+Layout & Navigation
+
+Pick the screen the app opens on, and which shortcuts and panels surround it.
+
+Theme Preferences
+
+Choose your preferred theme and configure dark/light mode settings.
+
+Localization
+
+Early Access
+
+Customize language, date format, time format, and regional preferences.
+
+Advanced Settings
+
+Configure webhooks, real-time updates, and other advanced features for enhanced productivity.
+
+Privacy & Analytics
+
+Control anonymous usage analytics and crash reporting.
+
+Developer Settings
+
+View technical information about authentication tokens, SSE connections, and debug data.
