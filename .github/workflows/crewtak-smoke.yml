@@ -1,0 +1,72 @@
+name: CrewTAK smoke test
+
+# Starts the freshly published image in a throwaway container, seeds a test
+# account, and screenshots the main pages. Results land on the
+# `smoke-results` branch (screenshots + page text + report.txt).
+
+on:
+  workflow_run:
+    workflows: [CrewTAK image]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: read
+
+jobs:
+  smoke:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start CrewTAK
+        run: |
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          docker run -d --name crewtak -p 2021:2021 -e TZ=America/Chicago \
+            "ghcr.io/${OWNER}/crewtak:latest"
+          for i in $(seq 1 60); do
+            curl -fsS http://localhost:2021/api/v1/health >/dev/null && break
+            sleep 2
+          done
+          docker logs crewtak | tail -20
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Playwright
+        working-directory: .github/crewtak-smoke
+        run: |
+          npm init -y >/dev/null
+          npm install playwright@1
+          npx playwright install --with-deps chromium
+
+      - name: Run smoke test
+        working-directory: .github/crewtak-smoke
+        env:
+          TZ: America/Chicago
+          OUT_DIR: ${{ github.workspace }}/smoke-out
+        run: node smoke.mjs
+
+      - name: Container log
+        if: always()
+        run: docker logs crewtak > smoke-out/container.log 2>&1 || true
+
+      - name: Publish results to smoke-results branch
+        if: always()
+        run: |
+          cd smoke-out
+          git init -q
+          git checkout -q -b smoke-results
+          git add -A
+          git -c user.name=crewtak-ci -c user.email=ci@localhost commit -qm "Smoke results ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" smoke-results
