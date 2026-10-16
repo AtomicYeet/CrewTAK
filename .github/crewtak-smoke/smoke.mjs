@@ -181,7 +181,7 @@ await shot('15-mobile-tasks', '/chores')
 await shot('16-mobile-create', '/chores/create', { fullPage: true })
 
 // Words that should not appear anywhere now.
-const forbidden = ['Circle', 'circle', 'NFC', 'Privacy Policy', 'Terms of', 'Priority', 'Labels', 'Points', 'Notifications', 'Require approval', 'Things', 'Adaptive', 'Yearly', 'Donetick', 'Attachment', 'Privacy settings', 'Scheduling']
+const forbidden = ['Recent Activities', 'Send nudge', 'Circle', 'circle', 'NFC', 'Privacy Policy', 'Terms of', 'Priority', 'Labels', 'Points', 'Notifications', 'Require approval', 'Things', 'Adaptive', 'Yearly', 'Donetick', 'Attachment', 'Privacy settings', 'Scheduling']
 for (const f of fs.readdirSync(OUT).filter(f => f.endsWith('.txt'))) {
   const txt = fs.readFileSync(`${OUT}/${f}`, 'utf8')
   const hits = forbidden.filter(w => txt.includes(w))
