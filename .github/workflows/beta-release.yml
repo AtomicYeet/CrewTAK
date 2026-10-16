@@ -11,6 +11,8 @@ permissions:
 
 jobs:
   beta-release:
+    # CrewTAK fork: releases are published from upstream only.
+    if: github.repository == 'donetick/donetick'
     name: Create Beta Release Tag
     runs-on: ubuntu-latest
     steps:

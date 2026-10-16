@@ -16,6 +16,8 @@ on:
 
 jobs:
   build:
+    # CrewTAK fork: releases are published from upstream only.
+    if: github.repository == 'donetick/donetick'
     runs-on: ubuntu-latest
     name: Build and Push Docker Image
     steps:

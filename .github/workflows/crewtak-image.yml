@@ -1,0 +1,84 @@
+name: CrewTAK image
+
+# Builds the CrewTAK container (this backend + the CrewTAKfrontend fork baked
+# in) and publishes it to ghcr.io/atomicyeet/crewtak. Unraid pulls :latest.
+#
+# Runs on every push to develop. After changing only the frontend, start it by
+# hand from the Actions tab ("Run workflow").
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: crewtak-image
+  cancel-in-progress: true
+
+jobs:
+  image:
+    name: Build and push image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout backend
+        uses: actions/checkout@v4
+
+      - name: Checkout frontend
+        uses: actions/checkout@v4
+        with:
+          repository: AtomicYeet/CrewTAKfrontend
+          ref: develop
+          path: frontend-code
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build frontend
+        working-directory: frontend-code
+        run: |
+          npm ci
+          npx vite build --mode selfhosted
+
+      - name: Bake frontend into backend
+        run: |
+          rm -rf ./frontend/dist
+          cp -r frontend-code/dist ./frontend/dist
+
+      - name: Image metadata
+        id: meta
+        run: |
+          echo "backend=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          echo "frontend=$(git -C frontend-code rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ghcr.io/${{ steps.meta.outputs.owner }}/crewtak:latest
+            ghcr.io/${{ steps.meta.outputs.owner }}/crewtak:${{ steps.meta.outputs.backend }}-${{ steps.meta.outputs.frontend }}
+          build-args: |
+            VERSION=crewtak-${{ steps.meta.outputs.backend }}-${{ steps.meta.outputs.frontend }}
+            COMMIT=${{ steps.meta.outputs.backend }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.title=CrewTAK
