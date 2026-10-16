@@ -152,6 +152,13 @@ await shot('04-create-custom-repeat', null, {
 })
 await shot('05-quick-add', '/chores?add_task=1', { wait: 3000 })
 await shot('06-task-view', first ? `/chores/${first.id}` : '/chores')
+await shot('06b-task-menu', null, {
+  before: async () => {
+    await page.getByRole('button', { name: /^more$/i }).first().click()
+    await page.waitForTimeout(600)
+  },
+  wait: 200,
+})
 await shot('07-log', '/log')
 await shot('08-settings', '/settings', { fullPage: true })
 await shot('09-activities', '/activities', { fullPage: true })
@@ -174,7 +181,7 @@ await shot('15-mobile-tasks', '/chores')
 await shot('16-mobile-create', '/chores/create', { fullPage: true })
 
 // Words that should not appear anywhere now.
-const forbidden = ['Privacy Policy', 'Terms of', 'Priority', 'Labels', 'Points', 'Notifications', 'Require approval', 'Things', 'Adaptive', 'Yearly', 'Donetick', 'Attachment', 'Privacy settings', 'Scheduling']
+const forbidden = ['Circle', 'circle', 'NFC', 'Privacy Policy', 'Terms of', 'Priority', 'Labels', 'Points', 'Notifications', 'Require approval', 'Things', 'Adaptive', 'Yearly', 'Donetick', 'Attachment', 'Privacy settings', 'Scheduling']
 for (const f of fs.readdirSync(OUT).filter(f => f.endsWith('.txt'))) {
   const txt = fs.readFileSync(`${OUT}/${f}`, 'utf8')
   const hits = forbidden.filter(w => txt.includes(w))
