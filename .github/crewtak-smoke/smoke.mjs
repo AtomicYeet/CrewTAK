@@ -217,18 +217,18 @@ await shot('07d-shift-info-picker', null, {
   wait: 200,
 })
 try {
-  const firstPerson = page.getByRole('dialog').getByRole('button').filter({ hasNotText: /clear/i }).first()
+  const firstPerson = page.locator('[role=dialog] li [role=button]').filter({ hasNotText: /clear/i }).first()
   const picked = (await firstPerson.textContent())?.trim()
   await firstPerson.click()
   await page.waitForTimeout(800)
   await page.getByRole('button', { name: /8p/ }).first().click()
   await page.waitForTimeout(600)
-  await page.getByRole('dialog').getByRole('button').filter({ hasNotText: /clear/i }).last().click()
+  await page.locator('[role=dialog] li [role=button]').filter({ hasNotText: /clear/i }).first().click()
   await page.waitForTimeout(1200)
   await page.reload()
   await page.waitForTimeout(2500)
   const captainBox = (await page.getByRole('button', { name: /captain's/i }).first().textContent()) || ''
-  log('SHIFT INFO captain after reload:', JSON.stringify(captainBox), '| expected to contain:', JSON.stringify(picked), captainBox.includes(picked) ? 'OK' : 'MISMATCH')
+  log('SHIFT INFO captain after reload:', JSON.stringify(captainBox), '| expected to contain:', JSON.stringify(picked), picked && captainBox.includes(picked) ? 'OK' : 'MISMATCH')
 } catch (e) {
   log('SHIFT INFO flow failed:', e.message)
 }
