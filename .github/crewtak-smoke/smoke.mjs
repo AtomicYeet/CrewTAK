@@ -206,6 +206,35 @@ await shot('07b-log-entry', null, {
   wait: 200,
 })
 await page.keyboard.press('Escape')
+// Shift Info: assign the Captain's phone and the first sleep block, then
+// reload to prove the picks were saved on the server.
+await shot('07c-shift-info-empty', '/shift', { wait: 2500 })
+await shot('07d-shift-info-picker', null, {
+  before: async () => {
+    await page.getByRole('button', { name: /captain's/i }).first().click()
+    await page.waitForTimeout(600)
+  },
+  wait: 200,
+})
+try {
+  const firstPerson = page.getByRole('dialog').getByRole('button').filter({ hasNotText: /clear/i }).first()
+  const picked = (await firstPerson.textContent())?.trim()
+  await firstPerson.click()
+  await page.waitForTimeout(800)
+  await page.getByRole('button', { name: /8p/ }).first().click()
+  await page.waitForTimeout(600)
+  await page.getByRole('dialog').getByRole('button').filter({ hasNotText: /clear/i }).last().click()
+  await page.waitForTimeout(1200)
+  await page.reload()
+  await page.waitForTimeout(2500)
+  const captainBox = (await page.getByRole('button', { name: /captain's/i }).first().textContent()) || ''
+  log('SHIFT INFO captain after reload:', JSON.stringify(captainBox), '| expected to contain:', JSON.stringify(picked), captainBox.includes(picked) ? 'OK' : 'MISMATCH')
+} catch (e) {
+  log('SHIFT INFO flow failed:', e.message)
+}
+await shot('07e-shift-info-filled', '/shift', { wait: 2500 })
+const badSlot = await api('/crewtak/shift-info', { method: 'PUT', body: JSON.stringify({ tour: '2026-01-01', slot: 'nope', userId: null }) }, token)
+log('SHIFT INFO bad slot rejected:', JSON.stringify(badSlot).slice(0, 80))
 await shot('08-settings', '/settings', { fullPage: true })
 await shot('08b-crew-settings', '/settings/circle', { fullPage: true })
 await shot('08c-profile', '/settings/profile', { fullPage: true })
@@ -227,6 +256,7 @@ await shot('14-display-tablet', '/display', { wait: 3000 })
 await page.setViewportSize({ width: 390, height: 844 })
 await shot('15-mobile-tasks', '/chores')
 await shot('16-mobile-create', '/chores/create', { fullPage: true })
+await shot('17-mobile-shift-info', '/shift', { wait: 2500 })
 
 // Words that should not appear anywhere now.
 const forbidden = ['Recent Activities', 'Send nudge', 'Circle', 'circle', 'NFC', 'Privacy Policy', 'Terms of', 'Priority', 'Labels', 'Points', 'Notifications', 'Require approval', 'Things', 'Adaptive', 'Yearly', 'Donetick', 'Attachment', 'Privacy settings', 'Scheduling']
