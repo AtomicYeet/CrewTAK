@@ -228,6 +228,7 @@ func main() {
 		// fx.Invoke(RunApp),
 		fx.Invoke(
 			chore.Routes,
+			chore.CrewtakRoutes,
 			calendar.Routes,
 			chore.APIs,
 			user.Routes,

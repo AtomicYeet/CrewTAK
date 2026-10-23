@@ -3,11 +3,17 @@
 //
 // Every assignment belongs to one crew and one 48-hour tour (identified by the
 // tour's start date, YYYY-MM-DD, as computed by the frontend's shift rotation).
-// A new tour therefore starts with every slot empty.
+// A new tour therefore starts with every slot empty. Sleep blocks are also
+// keyed by shift day (sleep.<day>.<block>), so they start empty again when Day
+// 1 rolls into Day 2.
+//
+// A person can carry only one phone at a time: putting someone on a phone
+// clears them off any other phone in the same tour.
 package shiftinfo
 
 import (
 	"regexp"
+	"strings"
 	"time"
 
 	auth "donetick.com/core/internal/auth"
@@ -34,6 +40,7 @@ var validSlots = map[string]bool{
 	"phone.captain": true,
 	"phone.ff1":     true,
 	"phone.ff2":     true,
+	"phone.ops":     true,
 	"sleep.1.0":     true,
 	"sleep.1.1":     true,
 	"sleep.1.2":     true,
@@ -110,23 +117,47 @@ func (h *Handler) set(c *gin.Context) {
 		}
 	}
 
+	now := time.Now().UTC()
 	slot := Slot{
 		CircleID:  user.CircleID,
 		Tour:      req.Tour,
 		Slot:      req.Slot,
 		UserID:    req.UserID,
 		UpdatedBy: user.ID,
-		UpdatedAt: time.Now().UTC(),
+		UpdatedAt: now,
 	}
-	err := h.db.WithContext(c).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "circle_id"}, {Name: "tour"}, {Name: "slot"}},
-		DoUpdates: clause.AssignmentColumns([]string{"user_id", "updated_by", "updated_at"}),
-	}).Create(&slot).Error
+	cleared := []string{}
+	err := h.db.WithContext(c).Transaction(func(tx *gorm.DB) error {
+		// One phone per person: the newest pick wins and their old phone is
+		// left empty for someone else.
+		if req.UserID != nil && strings.HasPrefix(req.Slot, "phone.") {
+			var old []Slot
+			if err := tx.Where("circle_id = ? AND tour = ? AND user_id = ? AND slot LIKE ? AND slot <> ?",
+				user.CircleID, req.Tour, *req.UserID, "phone.%", req.Slot).
+				Find(&old).Error; err != nil {
+				return err
+			}
+			for _, o := range old {
+				if err := tx.Model(&Slot{}).Where("id = ?", o.ID).Updates(map[string]interface{}{
+					"user_id":    nil,
+					"updated_by": user.ID,
+					"updated_at": now,
+				}).Error; err != nil {
+					return err
+				}
+				cleared = append(cleared, o.Slot)
+			}
+		}
+		return tx.Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "circle_id"}, {Name: "tour"}, {Name: "slot"}},
+			DoUpdates: clause.AssignmentColumns([]string{"user_id", "updated_by", "updated_at"}),
+		}).Create(&slot).Error
+	})
 	if err != nil {
 		c.JSON(500, gin.H{"error": "Error saving shift info"})
 		return
 	}
-	c.JSON(200, gin.H{"res": slot})
+	c.JSON(200, gin.H{"res": slot, "cleared": cleared})
 }
 
 func Routes(r *gin.Engine, h *Handler, multiAuthMiddleware *auth.MultiAuthMiddleware) {

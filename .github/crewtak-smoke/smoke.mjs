@@ -83,11 +83,18 @@ for (const [name, type, due] of [
   ['Take out Station Garbages', 'daily', at(0, 21, 0)],
   ['Water Softener Salt Check', 'weekly', at(1, 23, 59)],
   ['5133 MEDBAG Check', 'once', at(3, 23, 59)],
+  ['Early AM Perimeter', 'daily', at(-6, 6, 30)],
+  ['Old one-off chore', 'once', at(-2, 12, 0)],
 ]) {
   const r = await chore(name, type, due)
   ids.push(r?.res ?? r?.id ?? r)
 }
 log('created chores:', JSON.stringify(ids))
+// A project with its own task, for the "All Projects" view.
+const proj = await api('/projects', { method: 'POST', body: JSON.stringify({ name: 'Monthly Fire Extinguishers', color: '#d32f2f', icon: 'Build' }) }, token)
+const projId = proj?.res?.id ?? proj?.id
+log('project created:', projId)
+if (projId) await chore('Extinguisher Check Hangar', 'weekly', at(2, 23, 59), { projectId: projId })
 // Complete one task so the log and "done this shift" have something.
 const choresList = await api('/chores/', {}, token)
 const first = (choresList.res || []).find(c => c.name.startsWith('Daily Truck'))
@@ -174,8 +181,44 @@ const shot = async (name, path, opts = {}) => {
 }
 
 await shot('01-home', '/home')
-await shot('02-tasks', '/chores')
-await shot('03-create', '/chores/create', { fullPage: true })
+await shot('01b-home-quick-add', null, {
+  before: async () => {
+    await page.getByText(/add a task/i).first().click()
+    await page.waitForTimeout(1000)
+  },
+  wait: 300,
+})
+await page.keyboard.press('Escape')
+await page.waitForTimeout(500)
+await shot('02-tasks', '/tasks')
+// Old /chores links must land on /tasks.
+await page.goto(`${BASE}/chores?project=default`)
+await page.waitForTimeout(1500)
+log('REDIRECT /chores ->', new URL(page.url()).pathname + new URL(page.url()).search)
+// Future repeats on the timeline (on by default, 2 weeks).
+await shot('02b-tasks-repeats', '/tasks', { fullPage: true, wait: 3000 })
+{
+  const t = fs.readFileSync(`${OUT}/02b-tasks-repeats.txt`, 'utf8')
+  const n = (t.match(/Daily Truck Inspections/g) || []).length
+  log('REPEATS daily truck occurrences on /tasks:', n, n > 3 ? 'OK' : 'TOO FEW')
+}
+// All Projects overview.
+await shot('02c-tasks-all-projects', '/tasks?project=all', { fullPage: true, wait: 3000 })
+{
+  const t = fs.readFileSync(`${OUT}/02c-tasks-all-projects.txt`, 'utf8')
+  log('ALL PROJECTS shows project task:', t.includes('Extinguisher Check Hangar') ? 'OK' : 'MISSING', '| shows default task:', t.includes('Water Softener') ? 'OK' : 'MISSING')
+}
+await shot('02d-tasks-calendar', null, {
+  before: async () => {
+    await page.evaluate(() => localStorage.setItem('choreCardViewMode', 'calendar'))
+    await page.reload()
+    await page.waitForTimeout(2500)
+  },
+  fullPage: true,
+  wait: 300,
+})
+await page.evaluate(() => localStorage.setItem('choreCardViewMode', 'default'))
+await shot('03-create', '/tasks/create', { fullPage: true })
 await shot('04-create-custom-repeat', null, {
   before: async () => {
     await page.getByRole('combobox', { name: /schedule type/i }).first().click()
@@ -188,8 +231,8 @@ await shot('04-create-custom-repeat', null, {
   fullPage: true,
   wait: 300,
 })
-await shot('05-quick-add', '/chores?add_task=1', { wait: 3000 })
-await shot('06-task-view', first ? `/chores/${first.id}` : '/chores')
+await shot('05-quick-add', '/tasks?add_task=1', { wait: 3000 })
+await shot('06-task-view', first ? `/tasks/${first.id}` : '/tasks')
 await shot('06b-task-menu', null, {
   before: async () => {
     await page.getByRole('button', { name: /^more$/i }).first().click()
@@ -233,8 +276,48 @@ try {
   log('SHIFT INFO flow failed:', e.message)
 }
 await shot('07e-shift-info-filled', '/shift', { wait: 2500 })
+// One phone per person: put the same person on FF1, then Ops; FF1 must empty.
+{
+  const me = await api('/users/profile', {}, token)
+  const uid = me?.res?.id
+  if (uid) {
+    const T = '2030-01-01'
+    await api('/crewtak/shift-info', { method: 'PUT', body: JSON.stringify({ tour: T, slot: 'phone.ff1', userId: uid }) }, token)
+    const r = await api('/crewtak/shift-info', { method: 'PUT', body: JSON.stringify({ tour: T, slot: 'phone.ops', userId: uid }) }, token)
+    const after = await api(`/crewtak/shift-info?tour=${T}`, {}, token)
+    const map = Object.fromEntries((after.res || []).map(x => [x.slot, x.userId]))
+    log('PHONES one-per-person:', JSON.stringify(map), '| cleared:', JSON.stringify(r?.cleared), map['phone.ops'] === uid && map['phone.ff1'] == null ? 'OK' : 'FAIL')
+  }
+}
 const badSlot = await api('/crewtak/shift-info', { method: 'PUT', body: JSON.stringify({ tour: '2026-01-01', slot: 'nope', userId: null }) }, token)
 log('SHIFT INFO bad slot rejected:', JSON.stringify(badSlot).slice(0, 80))
+// Clear all overdue from Home.
+{
+  const before = (await api('/chores/', {}, token)).res || []
+  const overdueBefore = before.filter(c => c.nextDueDate && new Date(c.nextDueDate) < new Date())
+  log('CLEAR OVERDUE before:', overdueBefore.map(c => c.name).join(' | '))
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await shot('18-home-clear-button', '/home', { wait: 2500 })
+  try {
+    await page.getByRole('button', { name: /clear all overdue tasks/i }).first().click()
+    await page.waitForTimeout(700)
+    await page.screenshot({ path: `${OUT}/18b-clear-confirm.png` })
+    await page.getByRole('button', { name: /skip them all/i }).first().click()
+    await page.waitForTimeout(3000)
+    await page.screenshot({ path: `${OUT}/18c-home-after-clear.png` })
+  } catch (e) {
+    log('CLEAR OVERDUE UI failed:', e.message)
+  }
+  const after = (await api('/chores/', {}, token)).res || []
+  const overdueAfter = after.filter(c => c.nextDueDate && new Date(c.nextDueDate) < new Date())
+  const perim = after.find(c => c.name === 'Early AM Perimeter')
+  log('CLEAR OVERDUE after:', overdueAfter.length === 0 ? 'none OK' : overdueAfter.map(c => c.name).join(' | '), '| perimeter next due:', perim?.nextDueDate, '| one-off still active:', Boolean(after.find(c => c.name === 'Old one-off chore')))
+  if (perim) {
+    const h = await api(`/chores/${perim.id}/history`, {}, token)
+    const rows = (h.res || []).map(x => `status=${x.status} by=${x.completedBy}`)
+    log('CLEAR OVERDUE perimeter history:', rows.join(', '))
+  }
+}
 await shot('08-settings', '/settings', { fullPage: true })
 await shot('08b-crew-settings', '/settings/circle', { fullPage: true })
 await shot('08c-profile', '/settings/profile', { fullPage: true })
@@ -242,7 +325,7 @@ await shot('09-activities', '/activities', { fullPage: true })
 await shot('10-hidden-route-points', '/points')
 await shot('11-hidden-route-things', '/things')
 // Nav drawer
-await page.goto(`${BASE}/chores`)
+await page.goto(`${BASE}/tasks`)
 await page.waitForTimeout(2000)
 await page.getByRole('button', { name: /open menu/i }).first().click().catch(() => {})
 await shot('12-nav', null, { wait: 800 })
@@ -254,8 +337,8 @@ await page.setViewportSize({ width: 820, height: 1180 })
 await shot('14-display-tablet', '/display', { wait: 3000 })
 // Mobile
 await page.setViewportSize({ width: 390, height: 844 })
-await shot('15-mobile-tasks', '/chores')
-await shot('16-mobile-create', '/chores/create', { fullPage: true })
+await shot('15-mobile-tasks', '/tasks')
+await shot('16-mobile-create', '/tasks/create', { fullPage: true })
 await shot('17-mobile-shift-info', '/shift', { wait: 2500 })
 
 // Words that should not appear anywhere now.
