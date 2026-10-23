@@ -1,0 +1,52 @@
+login ok: true
+created chores: [1,2,3,4,5,6,7,8]
+project created: 1
+UNDO result: {"message":"Successfully undid completion action","res":{"completionActions":null,"id":4,"name":"Take out Station Garbag | due after undo: 2026-10-23T02:00:00Z | original due: 2026-10-23T02:00:00Z
+PHOTO upload: 200 {"sign":"profiles/1/68532527-9c37-4e89-93c0-27f0c6c35b77.png"}
+PHOTO fetch: 200 image/png http://localhost:2021/api/v1/assets/profiles/1/68532527-9c37-4e89-93c0-27f0c6c35b77.png
+after login url: http://localhost:2021/home
+shot 01-home: http://localhost:2021/home
+shot 01b-home-quick-add: http://localhost:2021/home
+shot 02-tasks: http://localhost:2021/tasks
+REDIRECT /chores -> /tasks
+shot 02b-tasks-repeats: http://localhost:2021/tasks
+REPEATS daily truck occurrences on /tasks: 14 OK
+shot 02c-tasks-all-projects: http://localhost:2021/tasks?project=all
+ALL PROJECTS shows project task: OK | shows default task: OK
+shot 02d-tasks-calendar: http://localhost:2021/tasks?project=all
+shot 03-create: http://localhost:2021/tasks/create
+shot 04-create-custom-repeat: http://localhost:2021/tasks/create
+shot 05-quick-add: http://localhost:2021/tasks
+shot 06-task-view: http://localhost:2021/tasks/1
+shot 06b-task-menu: http://localhost:2021/tasks/1
+shot 07-log: http://localhost:2021/log
+shot 07b-log-entry: http://localhost:2021/log
+shot 07c-shift-info-empty: http://localhost:2021/shift
+shot 07d-shift-info-picker: http://localhost:2021/shift
+SHIFT INFO captain after reload: "Captain'sCrew Test" | expected to contain: "CTCrew Test" MISMATCH
+shot 07e-shift-info-filled: http://localhost:2021/shift
+API PUT /crewtak/shift-info -> 400 {"error":"Unknown tour or slot"}
+RIG slot/user mismatch rejected: OK
+WATCH one-per-person, RIGS many-to-many: {"company.5132.u1":1,"company.5181.u1":1,"phone.ff1":null,"phone.ops":1,"sleep.1.0":null,"sleep.1.2":1,"sleep.2.1":1} OK
+PHONES one-per-person: {"phone.ff1":null,"phone.ops":1} | cleared: ["phone.ff1"] OK
+API PUT /crewtak/shift-info -> 400 {"error":"Unknown tour or slot"}
+SHIFT INFO bad slot rejected: {"error":"Unknown tour or slot"}
+CLEAR OVERDUE before: Early AM Perimeter | Old one-off chore | Crash Phone Test with ATCT | Take out Station Garbages
+shot 18-home-clear-button: http://localhost:2021/home
+CLEAR OVERDUE after: none OK | perimeter next due: 2026-10-23T11:30:00Z | one-off still active: false
+CLEAR OVERDUE perimeter history: status=2 by=1
+shot 08-settings: http://localhost:2021/settings
+shot 08b-crew-settings: http://localhost:2021/settings/circle
+shot 08c-profile: http://localhost:2021/settings/profile
+shot 09-activities: http://localhost:2021/home
+shot 10-hidden-route-points: http://localhost:2021/home
+shot 11-hidden-route-things: http://localhost:2021/home
+shot 12-nav: http://localhost:2021/tasks
+shot 13-display-tv: http://localhost:2021/display
+shot 14-display-tablet: http://localhost:2021/display
+shot 15-mobile-tasks: http://localhost:2021/tasks
+shot 16-mobile-create: http://localhost:2021/tasks/create
+shot 17-mobile-shift-info: http://localhost:2021/shift
+TEXT CHECK 08b-crew-settings.txt: contains circle
+console errors: 1
+   pageerror: Transition was skipped. New ViewTransition started

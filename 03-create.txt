@@ -1,0 +1,47 @@
+URL: http://localhost:2021/tasks/create
+
+Create task
+
+Name
+
+Schedule
+
+No due date
+
+Choose when this task is due and whether it repeats.
+
+Schedule type
+One-time task
+First due date
+Date
+Time
+Add a time
+
+Assignment
+
+Anyone in your crew
+
+Assign to
+
+Choose who can be assigned this task.
+
+Anyone
+C
+Crew Test
+This assignment matches your default for new tasks in this browser.
+
+Description
+
+Instructions and notes
+
+
+
+
+Project
+
+Subtasks
+
+A checklist of steps to complete this task
+
+Cancel
+Create

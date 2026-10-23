@@ -1,0 +1,108 @@
+URL: http://localhost:2021/display
+
+Crew
+TAK
+
+PHONES
+
+Captain
+
+Crew Test
+
+FF1
+
+—
+
+FF2
+
+—
+
+Ops
+
+—
+
+21:41
+
+Thursday 22 October
+
+WATCH · DAY 1
+
+8p – 1130p
+
+Crew Test
+
+1130p – 3a
+
+—
+
+3a – 7a
+
+—
+
+RIG ASSIGNMENTS
+
+5181 Crash
+
+Crew Test
+
+5182 Crash
+
+—
+
+5184 Fire/EMS
+
+—
+
+5132 EMS
+
+—
+
+A SHIFT · DAY 1
+
+33 Hours and 19 Minutes until shift change
+
+OVERDUE
+
+0
+
+Nothing overdue.
+
+DUE TODAY
+
+0
+
+All of today's tasks are done.
+
+TOMORROW
+
+Early AM Perimeter
+
+Fri 23 Oct 06:30
+
+Crash Phone Test with ATCT
+
+Fri 23 Oct 10:00
+
+Take out Station Garbages
+
+Fri 23 Oct 21:00
+
+Daily Truck Inspections/SCBA Inspections
+
+Fri 23 Oct
+
+Water Softener Salt Check
+
+Fri 23 Oct
+
+DONE THIS SHIFT
+
+2
+
+Wash and Detail Airport 5132
+
+Crew Test · 21:38
+
+Daily Truck Inspections/SCBA Inspections
+
+Crew Test · 21:38
