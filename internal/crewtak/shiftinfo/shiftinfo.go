@@ -8,12 +8,18 @@
 // when Day 1 rolls into Day 2.
 //
 // Within each group a person can hold only one slot: one phone, one watch time
-// per day, one company assignment. Putting someone in a slot clears them from
-// the other slots of the same group in the same tour.
+// per day. Putting someone in a slot clears them from the other slots of the
+// same group in the same tour.
+//
+// Rig (company) assignments are many-to-many: a rig can have several people
+// and a person can be on several rigs. Each pairing is its own row,
+// company.<rig>.u<userId>, set to that user (on) or null (off). Like
+// everything else here they belong to the tour, so they reset at shift change.
 package shiftinfo
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -42,10 +48,6 @@ var validSlots = map[string]bool{
 	"phone.ff1":     true,
 	"phone.ff2":     true,
 	"phone.ops":     true,
-	"company.5181":  true,
-	"company.5182":  true,
-	"company.5184":  true,
-	"company.5132":  true,
 	"sleep.1.0":     true,
 	"sleep.1.1":     true,
 	"sleep.1.2":     true,
@@ -60,14 +62,27 @@ func exclusiveGroup(slot string) string {
 	switch {
 	case strings.HasPrefix(slot, "phone."):
 		return "phone."
-	case strings.HasPrefix(slot, "company."):
-		return "company."
 	case strings.HasPrefix(slot, "sleep."):
 		if i := strings.LastIndex(slot, "."); i > 0 {
 			return slot[:i+1]
 		}
 	}
 	return ""
+}
+
+var rigPattern = regexp.MustCompile(`^company\.(5181|5182|5184|5132)\.u(\d+)$`)
+
+// validSlot reports whether slot is known and, for a rig pairing, that the
+// user being set matches the user named in the slot (or is being cleared).
+func validSlot(slot string, userID *int) bool {
+	if validSlots[slot] {
+		return true
+	}
+	m := rigPattern.FindStringSubmatch(slot)
+	if m == nil {
+		return false
+	}
+	return userID == nil || strconv.Itoa(*userID) == m[2]
 }
 
 var tourPattern = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
@@ -118,7 +133,7 @@ func (h *Handler) set(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "Invalid request"})
 		return
 	}
-	if !tourPattern.MatchString(req.Tour) || !validSlots[req.Slot] {
+	if !tourPattern.MatchString(req.Tour) || !validSlot(req.Slot, req.UserID) {
 		c.JSON(400, gin.H{"error": "Unknown tour or slot"})
 		return
 	}

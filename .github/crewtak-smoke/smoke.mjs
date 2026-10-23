@@ -275,6 +275,20 @@ try {
 } catch (e) {
   log('SHIFT INFO flow failed:', e.message)
 }
+// Put the first crew member on 5181 through the multi-select rig picker.
+try {
+  await page.goto(`${BASE}/shift`)
+  await page.waitForTimeout(2000)
+  await page.getByRole('button', { name: /5181 Crash Truck/ }).first().click()
+  await page.waitForTimeout(600)
+  await page.locator('[role=dialog] li [role=button]').filter({ hasNotText: /done/i }).first().click()
+  await page.waitForTimeout(1000)
+  await page.screenshot({ path: `${OUT}/07d2-rig-picker.png` })
+  await page.getByRole('button', { name: /^done$/i }).first().click()
+  await page.waitForTimeout(800)
+} catch (e) {
+  log('RIG picker flow failed:', e.message)
+}
 await shot('07e-shift-info-filled', '/shift', { wait: 2500, fullPage: true })
 // One phone per person: put the same person on FF1, then Ops; FF1 must empty.
 {
@@ -289,12 +303,14 @@ await shot('07e-shift-info-filled', '/shift', { wait: 2500, fullPage: true })
     await api('/crewtak/shift-info', { method: 'PUT', body: JSON.stringify({ tour: T, slot: 'sleep.1.0', userId: uid }) }, token)
     await api('/crewtak/shift-info', { method: 'PUT', body: JSON.stringify({ tour: T, slot: 'sleep.1.2', userId: uid }) }, token)
     await api('/crewtak/shift-info', { method: 'PUT', body: JSON.stringify({ tour: T, slot: 'sleep.2.1', userId: uid }) }, token)
-    await api('/crewtak/shift-info', { method: 'PUT', body: JSON.stringify({ tour: T, slot: 'company.5181', userId: uid }) }, token)
-    await api('/crewtak/shift-info', { method: 'PUT', body: JSON.stringify({ tour: T, slot: 'company.5132', userId: uid }) }, token)
+    await api('/crewtak/shift-info', { method: 'PUT', body: JSON.stringify({ tour: T, slot: `company.5181.u${uid}`, userId: uid }) }, token)
+    await api('/crewtak/shift-info', { method: 'PUT', body: JSON.stringify({ tour: T, slot: `company.5132.u${uid}`, userId: uid }) }, token)
+    const wrongUser = await api('/crewtak/shift-info', { method: 'PUT', body: JSON.stringify({ tour: T, slot: `company.5184.u${uid + 999}`, userId: uid }) }, token)
+    log('RIG slot/user mismatch rejected:', JSON.stringify(wrongUser).includes('Unknown') ? 'OK' : 'FAIL')
     const after2 = await api(`/crewtak/shift-info?tour=${T}`, {}, token)
     const m2 = Object.fromEntries((after2.res || []).map(x => [x.slot, x.userId]))
-    const ok2 = m2['sleep.1.0'] == null && m2['sleep.1.2'] === uid && m2['sleep.2.1'] === uid && m2['company.5181'] == null && m2['company.5132'] === uid && m2['phone.ops'] === uid
-    log('WATCH/COMPANY one-per-person:', JSON.stringify(m2), ok2 ? 'OK' : 'FAIL')
+    const ok2 = m2['sleep.1.0'] == null && m2['sleep.1.2'] === uid && m2['sleep.2.1'] === uid && m2[`company.5181.u${uid}`] === uid && m2[`company.5132.u${uid}`] === uid && m2['phone.ops'] === uid
+    log('WATCH one-per-person, RIGS many-to-many:', JSON.stringify(m2), ok2 ? 'OK' : 'FAIL')
     log('PHONES one-per-person:', JSON.stringify(map), '| cleared:', JSON.stringify(r?.cleared), map['phone.ops'] === uid && map['phone.ff1'] == null ? 'OK' : 'FAIL')
   }
 }
