@@ -3,12 +3,13 @@
 //
 // Every assignment belongs to one crew and one 48-hour tour (identified by the
 // tour's start date, YYYY-MM-DD, as computed by the frontend's shift rotation).
-// A new tour therefore starts with every slot empty. Sleep blocks are also
-// keyed by shift day (sleep.<day>.<block>), so they start empty again when Day
-// 1 rolls into Day 2.
+// A new tour therefore starts with every slot empty. Watch times (stored as
+// sleep.<day>.<block>) are also keyed by shift day, so they start empty again
+// when Day 1 rolls into Day 2.
 //
-// A person can carry only one phone at a time: putting someone on a phone
-// clears them off any other phone in the same tour.
+// Within each group a person can hold only one slot: one phone, one watch time
+// per day, one company assignment. Putting someone in a slot clears them from
+// the other slots of the same group in the same tour.
 package shiftinfo
 
 import (
@@ -41,12 +42,32 @@ var validSlots = map[string]bool{
 	"phone.ff1":     true,
 	"phone.ff2":     true,
 	"phone.ops":     true,
+	"company.5181":  true,
+	"company.5182":  true,
+	"company.5184":  true,
+	"company.5132":  true,
 	"sleep.1.0":     true,
 	"sleep.1.1":     true,
 	"sleep.1.2":     true,
 	"sleep.2.0":     true,
 	"sleep.2.1":     true,
 	"sleep.2.2":     true,
+}
+
+// exclusiveGroup is the prefix of the slots a person may hold only one of:
+// "phone.", "company.", or "sleep.<day>." (one watch time per shift day).
+func exclusiveGroup(slot string) string {
+	switch {
+	case strings.HasPrefix(slot, "phone."):
+		return "phone."
+	case strings.HasPrefix(slot, "company."):
+		return "company."
+	case strings.HasPrefix(slot, "sleep."):
+		if i := strings.LastIndex(slot, "."); i > 0 {
+			return slot[:i+1]
+		}
+	}
+	return ""
 }
 
 var tourPattern = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
@@ -128,12 +149,12 @@ func (h *Handler) set(c *gin.Context) {
 	}
 	cleared := []string{}
 	err := h.db.WithContext(c).Transaction(func(tx *gorm.DB) error {
-		// One phone per person: the newest pick wins and their old phone is
-		// left empty for someone else.
-		if req.UserID != nil && strings.HasPrefix(req.Slot, "phone.") {
+		// One slot per person per group: the newest pick wins and their old
+		// slot is left empty for someone else.
+		if group := exclusiveGroup(req.Slot); req.UserID != nil && group != "" {
 			var old []Slot
 			if err := tx.Where("circle_id = ? AND tour = ? AND user_id = ? AND slot LIKE ? AND slot <> ?",
-				user.CircleID, req.Tour, *req.UserID, "phone.%", req.Slot).
+				user.CircleID, req.Tour, *req.UserID, group+"%", req.Slot).
 				Find(&old).Error; err != nil {
 				return err
 			}
