@@ -84,7 +84,7 @@ func (h *Handler) fromAWC(ctx context.Context) (*Metar, error) {
 	r := rows[0]
 	return &Metar{
 		Station: station,
-		Raw:     strings.TrimSpace(r.RawOb),
+		Raw:     cleanRaw(r.RawOb),
 		TempC:   r.Temp,
 		Time:    time.Unix(r.ObsTime, 0).UTC(),
 		Source:  "aviationweather.gov",
@@ -110,12 +110,18 @@ func (h *Handler) fromNWS(ctx context.Context) (*Metar, error) {
 	p := body.Properties
 	return &Metar{
 		Station: station,
-		Raw:     strings.TrimSpace(p.RawMessage),
+		Raw:     cleanRaw(p.RawMessage),
 		TempC:   p.Temperature.Value,
 		Text:    p.TextDescription,
 		Time:    p.Timestamp.UTC(),
 		Source:  "weather.gov",
 	}, nil
+}
+
+// cleanRaw drops the leading "METAR " report-type word (the display already
+// labels the line) but keeps "SPECI", which flags an unscheduled report.
+func cleanRaw(raw string) string {
+	return strings.TrimPrefix(strings.TrimSpace(raw), "METAR ")
 }
 
 func (h *Handler) latest(ctx context.Context) (*Metar, error) {

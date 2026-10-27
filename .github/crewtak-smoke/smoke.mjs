@@ -293,7 +293,7 @@ try {
 try {
   await page.goto(`${BASE}/shift`)
   await page.waitForTimeout(2000)
-  await page.getByTestId('watch-day-2').getByRole('button', { name: /1130p/ }).first().click()
+  await page.getByTestId('watch-day-2').getByRole('button', { name: /^1130p/ }).first().click()
   await page.waitForTimeout(600)
   await page.locator('[role=dialog] li [role=button]').filter({ hasNotText: /clear/i }).first().click()
   await page.waitForTimeout(1000)
@@ -362,7 +362,7 @@ await shot('07e-shift-info-filled', '/shift', { wait: 2500, fullPage: true })
 // Server-side METAR.
 {
   const m = await api('/crewtak/weather/metar', {}, token)
-  log('METAR API:', JSON.stringify(m).slice(0, 220), m?.res?.raw?.startsWith('KATW') ? 'OK' : 'FAIL')
+  log('METAR API:', JSON.stringify(m).slice(0, 220), /^(SPECI )?KATW /.test(m?.res?.raw || '') ? 'OK' : 'FAIL')
 }
 const badSlot = await api('/crewtak/shift-info', { method: 'PUT', body: JSON.stringify({ tour: '2026-01-01', slot: 'nope', userId: null }) }, token)
 log('SHIFT INFO bad slot rejected:', JSON.stringify(badSlot).slice(0, 80))
