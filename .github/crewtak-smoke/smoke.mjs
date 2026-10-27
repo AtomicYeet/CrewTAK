@@ -357,7 +357,17 @@ await shot('12-nav', null, { wait: 800 })
 
 // Wall display at TV size
 await page.setViewportSize({ width: 1920, height: 1080 })
-await shot('13-display-tv', '/display', { wait: 3500 })
+await shot('13-display-tv', '/display', { wait: 6000 })
+{
+  const clock = (await page.getByTestId('display-clock').innerText().catch(() => '')).replace(/\s+/g, ' ')
+  log('DISPLAY CLOCK:', clock, /\d\d:\d\d \| \d\d:\d\d ?Z/.test(clock) ? 'OK' : 'FAIL')
+  const weather = (await page.getByTestId('weather-widget').innerText().catch(() => '')).replace(/\s+/g, ' ')
+  log('DISPLAY WEATHER:', weather || '(missing)')
+  const metar = (await page.getByTestId('metar-strip').innerText().catch(() => '')).replace(/\s+/g, ' ')
+  log('DISPLAY METAR:', metar || '(none shown)')
+  const logo = await page.locator('img[src*="logo"]').count()
+  log('DISPLAY LOGO REMOVED:', logo === 0 ? 'OK' : 'FAIL')
+}
 await page.setViewportSize({ width: 820, height: 1180 })
 await shot('14-display-tablet', '/display', { wait: 3000 })
 // Mobile
