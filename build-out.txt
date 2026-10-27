@@ -1,0 +1,56 @@
+npm warn deprecated @oclif/screen@3.0.8: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+npm warn deprecated glob@11.1.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+
+> donetick@1.2.55 postinstall
+> patch-package
+
+patch-package 8.0.1
+Applying patches...
+@capacitor-community/speech-recognition@7.0.1 ✔
+
+added 1322 packages in 23s
+[36mvite v5.4.19 [32mbuilding for selfhosted...[36m[39m
+transforming...
+Browserslist: browsers data (caniuse-lite) is 9 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+[32m✓[39m 14660 modules transformed.
+
+[36mPWA v0.20.5[39m
+mode      [35mgenerateSW[39m
+precache  [32m10 entries[39m [2m(0.00 KiB)[22m
+files generated
+  [2mdist/sw.js[22m
+  [2mdist/workbox-2fbc6a65.js[22m
+[33mwarnings
+  One of the glob patterns doesn't match any files. Please remove or fix the following: {
+  "globDirectory": "/home/runner/work/CrewTAK/CrewTAK/frontend-code/dist",
+  "globPattern": "**/*.{js,wasm,css,html}",
+  "globIgnores": [
+    "**/node_modules/**/*",
+    "sw.js",
+    "workbox-*.js"
+  ]
+}
+[39m
+[31mx[39m Build failed in 11.82s
+[31merror during build:
+[31m[vite-plugin-pwa:build] There was an error during the build:
+  src/crewtak/WallDisplay.jsx (6:2): "Foggy" is not exported by "node_modules/@mui/icons-material/esm/index.js", imported by "src/crewtak/WallDisplay.jsx".
+Additionally, handling the error in the 'buildEnd' hook caused the following error:
+  src/crewtak/WallDisplay.jsx (6:2): "Foggy" is not exported by "node_modules/@mui/icons-material/esm/index.js", imported by "src/crewtak/WallDisplay.jsx".[31m
+file: [36m/home/runner/work/CrewTAK/CrewTAK/frontend-code/src/crewtak/WallDisplay.jsx:6:2[31m
+[33m
+4:   Cloud,
+5:   FilterDrama,
+6:   Foggy,
+     ^
+7:   HomeRounded,
+8:   LocalFireDepartment,
+[31m
+    at getRollupError (file:///home/runner/work/CrewTAK/CrewTAK/frontend-code/node_modules/rollup/dist/es/shared/parseAst.js:317:41)
+    at file:///home/runner/work/CrewTAK/CrewTAK/frontend-code/node_modules/rollup/dist/es/shared/node-entry.js:23687:39
+    at async catchUnfinishedHookActions (file:///home/runner/work/CrewTAK/CrewTAK/frontend-code/node_modules/rollup/dist/es/shared/node-entry.js:23143:16)
+    at async rollupInternal (file:///home/runner/work/CrewTAK/CrewTAK/frontend-code/node_modules/rollup/dist/es/shared/node-entry.js:23670:5)
+    at async build (file:///home/runner/work/CrewTAK/CrewTAK/frontend-code/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:65693:14)
+    at async CAC.<anonymous> (file:///home/runner/work/CrewTAK/CrewTAK/frontend-code/node_modules/vite/dist/node/cli.js:829:5)[39m
