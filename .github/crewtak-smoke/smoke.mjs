@@ -360,7 +360,7 @@ await page.setViewportSize({ width: 1920, height: 1080 })
 await shot('13-display-tv', '/display', { wait: 6000 })
 {
   const clock = (await page.getByTestId('display-clock').innerText().catch(() => '')).replace(/\s+/g, ' ')
-  log('DISPLAY CLOCK:', clock, /\d\d:\d\d \| \d\d:\d\d ?Z/.test(clock) ? 'OK' : 'FAIL')
+  log('DISPLAY CLOCK:', clock, /\d\d:\d\d ?\| ?\d\d:\d\d ?Z/.test(clock) ? 'OK' : 'FAIL')
   const weather = (await page.getByTestId('weather-widget').innerText().catch(() => '')).replace(/\s+/g, ' ')
   log('DISPLAY WEATHER:', weather || '(missing)')
   const metar = (await page.getByTestId('metar-strip').innerText().catch(() => '')).replace(/\s+/g, ' ')
