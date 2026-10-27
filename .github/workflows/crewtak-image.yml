@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 concurrency:
@@ -42,8 +42,17 @@ jobs:
       - name: Build frontend
         working-directory: frontend-code
         run: |
-          npm ci
-          npx vite build --mode selfhosted
+          set -o pipefail
+          npm ci 2>&1 | tail -40 | tee ../build-out.txt
+          npx vite build --mode selfhosted 2>&1 | tee -a ../build-out.txt
+
+      - name: Publish build log on failure
+        if: failure()
+        run: |
+          mkdir -p build-log && cp build-out.txt build-log/ 2>/dev/null || echo "no log" > build-log/build-out.txt
+          cd build-log && git init -q && git checkout -q -b build-log && git add -A
+          git -c user.name=crewtak-ci -c user.email=ci@localhost commit -qm "Build log ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" build-log
 
       - name: Bake frontend into backend
         run: |
