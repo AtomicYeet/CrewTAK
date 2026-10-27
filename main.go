@@ -22,6 +22,7 @@ import (
 	"donetick.com/core/internal/circle"
 	cRepo "donetick.com/core/internal/circle/repo"
 	shiftinfo "donetick.com/core/internal/crewtak/shiftinfo"
+	crewweather "donetick.com/core/internal/crewtak/weather"
 	"donetick.com/core/internal/database"
 	"donetick.com/core/internal/device"
 	dRepo "donetick.com/core/internal/device/repo"
@@ -170,6 +171,7 @@ func main() {
 
 		// CrewTAK shift info:
 		fx.Provide(shiftinfo.NewHandler),
+		fx.Provide(crewweather.NewHandler),
 
 		// Rewards:
 		fx.Provide(rwRepo.NewRewardRepository),
@@ -239,6 +241,7 @@ func main() {
 			thing.APIs,
 			label.Routes,
 			shiftinfo.Routes,
+			crewweather.Routes,
 			reward.Routes,
 			project.Routes,
 			filter.Routes,

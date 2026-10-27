@@ -15,6 +15,10 @@
 // and a person can be on several rigs. Each pairing is its own row,
 // company.<rig>.u<userId>, set to that user (on) or null (off). Like
 // everything else here they belong to the tour, so they reset at shift change.
+//
+// Dinner plans work the same way per shift day: dinner.<day>.u<userId> for
+// each person cooking, plus dinner.<day>.note holding a short description
+// (up to 255 characters) of what dinner will be.
 package shiftinfo
 
 import (
@@ -22,6 +26,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	auth "donetick.com/core/internal/auth"
 	"github.com/gin-gonic/gin"
@@ -36,6 +41,7 @@ type Slot struct {
 	Tour      string    `json:"tour" gorm:"column:tour;size:10;not null;uniqueIndex:idx_crewtak_shift_slot"`
 	Slot      string    `json:"slot" gorm:"column:slot;size:32;not null;uniqueIndex:idx_crewtak_shift_slot"`
 	UserID    *int      `json:"userId" gorm:"column:user_id"`
+	Note      *string   `json:"note,omitempty" gorm:"column:note;size:255"`
 	UpdatedBy int       `json:"updatedBy" gorm:"column:updated_by"`
 	UpdatedAt time.Time `json:"updatedAt" gorm:"column:updated_at"`
 }
@@ -70,19 +76,30 @@ func exclusiveGroup(slot string) string {
 	return ""
 }
 
-var rigPattern = regexp.MustCompile(`^company\.(5181|5182|5184|5132)\.u(\d+)$`)
+// Many-to-many pairings: a person on a rig, or a person cooking dinner.
+var pairPattern = regexp.MustCompile(`^(?:company\.(?:5181|5182|5184|5132)|dinner\.[12])\.u(\d+)$`)
 
-// validSlot reports whether slot is known and, for a rig pairing, that the
-// user being set matches the user named in the slot (or is being cleared).
+// Free-text slots: what's for dinner on each shift day.
+var notePattern = regexp.MustCompile(`^dinner\.[12]\.note$`)
+
+const maxNoteLen = 255
+
+func isNoteSlot(slot string) bool { return notePattern.MatchString(slot) }
+
+// validSlot reports whether slot is known and, for a pairing, that the user
+// being set matches the user named in the slot (or is being cleared).
 func validSlot(slot string, userID *int) bool {
 	if validSlots[slot] {
 		return true
 	}
-	m := rigPattern.FindStringSubmatch(slot)
+	if isNoteSlot(slot) {
+		return userID == nil
+	}
+	m := pairPattern.FindStringSubmatch(slot)
 	if m == nil {
 		return false
 	}
-	return userID == nil || strconv.Itoa(*userID) == m[2]
+	return userID == nil || strconv.Itoa(*userID) == m[1]
 }
 
 var tourPattern = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
@@ -117,9 +134,10 @@ func (h *Handler) get(c *gin.Context) {
 }
 
 type setReq struct {
-	Tour   string `json:"tour"`
-	Slot   string `json:"slot"`
-	UserID *int   `json:"userId"`
+	Tour   string  `json:"tour"`
+	Slot   string  `json:"slot"`
+	UserID *int    `json:"userId"`
+	Note   *string `json:"note"`
 }
 
 func (h *Handler) set(c *gin.Context) {
@@ -136,6 +154,17 @@ func (h *Handler) set(c *gin.Context) {
 	if !tourPattern.MatchString(req.Tour) || !validSlot(req.Slot, req.UserID) {
 		c.JSON(400, gin.H{"error": "Unknown tour or slot"})
 		return
+	}
+	var note *string
+	if isNoteSlot(req.Slot) && req.Note != nil {
+		n := strings.TrimSpace(*req.Note)
+		if utf8.RuneCountInString(n) > maxNoteLen {
+			c.JSON(400, gin.H{"error": "Keep the description to 255 characters"})
+			return
+		}
+		if n != "" {
+			note = &n
+		}
 	}
 	if req.UserID != nil {
 		// Only members of the caller's crew can be assigned.
@@ -159,6 +188,7 @@ func (h *Handler) set(c *gin.Context) {
 		Tour:      req.Tour,
 		Slot:      req.Slot,
 		UserID:    req.UserID,
+		Note:      note,
 		UpdatedBy: user.ID,
 		UpdatedAt: now,
 	}
@@ -186,7 +216,7 @@ func (h *Handler) set(c *gin.Context) {
 		}
 		return tx.Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "circle_id"}, {Name: "tour"}, {Name: "slot"}},
-			DoUpdates: clause.AssignmentColumns([]string{"user_id", "updated_by", "updated_at"}),
+			DoUpdates: clause.AssignmentColumns([]string{"user_id", "note", "updated_by", "updated_at"}),
 		}).Create(&slot).Error
 	})
 	if err != nil {

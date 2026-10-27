@@ -289,6 +289,34 @@ try {
 } catch (e) {
   log('RIG picker flow failed:', e.message)
 }
+// Day 2 watch time and Day 1 dinner (cooks + description) through the UI.
+try {
+  await page.goto(`${BASE}/shift`)
+  await page.waitForTimeout(2000)
+  await page.getByTestId('watch-day-2').getByRole('button', { name: /1130p/ }).first().click()
+  await page.waitForTimeout(600)
+  await page.locator('[role=dialog] li [role=button]').filter({ hasNotText: /clear/i }).first().click()
+  await page.waitForTimeout(1000)
+  await page.getByTestId('dinner-day-1').getByRole('button', { name: /cooking/i }).first().click()
+  await page.waitForTimeout(600)
+  await page.locator('[role=dialog] li [role=button]').filter({ hasNotText: /done/i }).first().click()
+  await page.waitForTimeout(800)
+  await page.getByRole('button', { name: /^done$/i }).first().click()
+  await page.waitForTimeout(600)
+  const note = page.getByLabel('Day 1 dinner description')
+  await note.fill('Tacos, rice and beans')
+  await note.press('Enter')
+  await page.waitForTimeout(1500)
+  await page.reload()
+  await page.waitForTimeout(2500)
+  const watch2 = (await page.getByTestId('watch-day-2').innerText()).replace(/\s+/g, ' ')
+  const dinner1 = (await page.getByTestId('dinner-day-1').innerText()).replace(/\s+/g, ' ')
+  const noteVal = await page.getByLabel('Day 1 dinner description').inputValue()
+  log('WATCH DAY 2 after reload:', watch2, /1130p – 3a → Crew Test/.test(watch2) ? 'OK' : 'CHECK')
+  log('DINNER DAY 1 after reload:', dinner1, '| note:', JSON.stringify(noteVal), noteVal === 'Tacos, rice and beans' && dinner1.includes('Crew Test') ? 'OK' : 'FAIL')
+} catch (e) {
+  log('WATCH/DINNER flow failed:', e.message)
+}
 await shot('07e-shift-info-filled', '/shift', { wait: 2500, fullPage: true })
 // One phone per person: put the same person on FF1, then Ops; FF1 must empty.
 {
@@ -313,6 +341,28 @@ await shot('07e-shift-info-filled', '/shift', { wait: 2500, fullPage: true })
     log('WATCH one-per-person, RIGS many-to-many:', JSON.stringify(m2), ok2 ? 'OK' : 'FAIL')
     log('PHONES one-per-person:', JSON.stringify(map), '| cleared:', JSON.stringify(r?.cleared), map['phone.ops'] === uid && map['phone.ff1'] == null ? 'OK' : 'FAIL')
   }
+}
+// Dinner: many cooks per day, a short description, 255-character limit.
+{
+  const me = await api('/users/profile', {}, token)
+  const uid = me?.res?.id
+  const T = '2030-02-01'
+  const put = body => api('/crewtak/shift-info', { method: 'PUT', body: JSON.stringify({ tour: T, ...body }) }, token)
+  await put({ slot: `dinner.2.u${uid}`, userId: uid })
+  await put({ slot: 'dinner.2.note', note: '  Chili night  ' })
+  const tooLong = await put({ slot: 'dinner.2.note', note: 'x'.repeat(256) })
+  const noteWithUser = await put({ slot: 'dinner.2.note', userId: uid, note: 'x' })
+  const got = await api(`/crewtak/shift-info?tour=${T}`, {}, token)
+  const rows = Object.fromEntries((got.res || []).map(x => [x.slot, x]))
+  const ok = rows[`dinner.2.u${uid}`]?.userId === uid && rows['dinner.2.note']?.note === 'Chili night'
+  log('DINNER API:', JSON.stringify(rows['dinner.2.note']), ok ? 'OK' : 'FAIL',
+    '| 256 chars rejected:', JSON.stringify(tooLong).includes('255') ? 'OK' : 'FAIL',
+    '| note+user rejected:', JSON.stringify(noteWithUser).includes('Unknown') ? 'OK' : 'FAIL')
+}
+// Server-side METAR.
+{
+  const m = await api('/crewtak/weather/metar', {}, token)
+  log('METAR API:', JSON.stringify(m).slice(0, 220), m?.res?.raw?.startsWith('KATW') ? 'OK' : 'FAIL')
 }
 const badSlot = await api('/crewtak/shift-info', { method: 'PUT', body: JSON.stringify({ tour: '2026-01-01', slot: 'nope', userId: null }) }, token)
 log('SHIFT INFO bad slot rejected:', JSON.stringify(badSlot).slice(0, 80))
@@ -349,6 +399,7 @@ await shot('08c-profile', '/settings/profile', { fullPage: true })
 await shot('09-activities', '/activities', { fullPage: true })
 await shot('10-hidden-route-points', '/points')
 await shot('11-hidden-route-things', '/things')
+await shot('11b-training', '/training')
 // Nav drawer
 await page.goto(`${BASE}/tasks`)
 await page.waitForTimeout(2000)
@@ -365,6 +416,8 @@ await shot('13-display-tv', '/display', { wait: 6000 })
   log('DISPLAY WEATHER:', weather || '(missing)')
   const metar = (await page.getByTestId('metar-strip').innerText().catch(() => '')).replace(/\s+/g, ' ')
   log('DISPLAY METAR:', metar || '(none shown)')
+  const watch = (await page.getByTestId('display-watch').innerText().catch(() => '')).replace(/\s+/g, ' ')
+  log('DISPLAY WATCH:', watch, /DAY 1.*DAY 2/i.test(watch) ? 'OK' : 'FAIL')
   const logo = await page.locator('img[src*="logo"]').count()
   log('DISPLAY LOGO REMOVED:', logo === 0 ? 'OK' : 'FAIL')
 }
