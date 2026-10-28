@@ -15,7 +15,16 @@ const log = (...a) => {
   const line = a.join(' ')
   console.log(line)
   report.push(line)
+  // Written as we go so a crash still leaves a readable report.
+  fs.appendFileSync(`${OUT}/report.txt`, line + '\n')
 }
+fs.writeFileSync(`${OUT}/report.txt`, '')
+const crashed = e => {
+  log('SMOKE CRASHED:', e?.stack || String(e))
+  process.exit(1)
+}
+process.on('uncaughtException', crashed)
+process.on('unhandledRejection', crashed)
 
 const api = async (path, opts = {}, token) => {
   const res = await fetch(`${BASE}/api/v1${path}`, {
@@ -477,4 +486,4 @@ log('console errors:', consoleErrors.length)
 consoleErrors.slice(0, 40).forEach(e => log('  ', e.slice(0, 300)))
 
 await browser.close()
-fs.writeFileSync(`${OUT}/report.txt`, report.join('\n'))
+
