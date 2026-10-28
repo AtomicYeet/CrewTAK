@@ -236,9 +236,9 @@ func (u User) ValidateChildUser() error {
 		return errors.New("child user must have a parent user ID")
 	}
 
-	// Username should follow parent_child pattern
-	if !IsValidChildUsername(u.Username) {
-		return errors.New("child username must follow parent_child pattern")
+	// CrewTAK: crew logins use plain usernames (no parent_ prefix).
+	if strings.TrimSpace(u.Username) == "" {
+		return errors.New("username is required")
 	}
 
 	// Email is optional for child users (can be empty)

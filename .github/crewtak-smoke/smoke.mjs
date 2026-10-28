@@ -53,6 +53,42 @@ const login = await api('/auth/login', {
 const token = login.access_token || login.token
 log('login ok:', Boolean(token))
 
+// --- crew users: plain usernames, admin-role management, signup closed ----
+{
+  const rawStatus = async (path, opts = {}, tok) => {
+    const res = await fetch(`${BASE}/api/v1${path}`, {
+      ...opts,
+      headers: { 'Content-Type': 'application/json', ...(tok ? { Authorization: `Bearer ${tok}` } : {}) },
+    })
+    return res.status
+  }
+  const signup2 = await rawStatus('/auth/', { method: 'POST', body: JSON.stringify({ username: 'stranger', password: 'stranger-pass-1', email: 'stranger@example.com' }) })
+  log('SIGNUP CLOSED:', signup2 === 403 ? 'OK' : `FAIL (${signup2})`)
+
+  const made = await api('/users/subaccounts', { method: 'POST', body: JSON.stringify({ childName: 'smokemember', displayName: 'Smoke Member', password: 'member-pass-1' }) }, token)
+  log('CREW USER USERNAME:', made?.res?.username, made?.res?.username === 'smokemember' ? 'OK' : 'FAIL')
+  const dupe = await rawStatus('/users/subaccounts', { method: 'POST', body: JSON.stringify({ childName: 'smokemember', password: 'member-pass-1' }) }, token)
+  log('CREW USER DUPLICATE REJECTED:', dupe === 409 ? 'OK' : `FAIL (${dupe})`)
+
+  const mLogin = await api('/auth/login', { method: 'POST', body: JSON.stringify({ username: 'SmokeMember', password: 'member-pass-1' }) })
+  const mToken = mLogin.access_token || mLogin.token
+  log('CREW USER PLAIN LOGIN (any case):', mToken ? 'OK' : 'FAIL')
+
+  const asMember = await rawStatus('/users/subaccounts', {}, mToken)
+  log('MEMBER CANNOT MANAGE USERS:', asMember === 403 ? 'OK' : `FAIL (${asMember})`)
+
+  await api('/circles/members/role', { method: 'PUT', body: JSON.stringify({ memberId: made?.res?.id, role: 'admin' }) }, token)
+  const listed = await api('/users/subaccounts', {}, mToken)
+  log('PROMOTED ADMIN CAN LIST USERS:', Array.isArray(listed?.res) ? 'OK' : 'FAIL')
+  const made2 = await api('/users/subaccounts', { method: 'POST', body: JSON.stringify({ childName: 'smokesecond', password: 'second-pass-1' }) }, mToken)
+  log('PROMOTED ADMIN CAN ADD USER:', made2?.res?.username === 'smokesecond' ? 'OK' : 'FAIL')
+  const reset = await rawStatus('/users/subaccounts/password', { method: 'PUT', body: JSON.stringify({ childUserId: made2?.res?.id, password: 'second-pass-2' }) }, mToken)
+  const relog = await api('/auth/login', { method: 'POST', body: JSON.stringify({ username: 'smokesecond', password: 'second-pass-2' }) })
+  log('PROMOTED ADMIN CAN RESET PASSWORD:', reset === 200 && (relog.access_token || relog.token) ? 'OK' : `FAIL (${reset})`)
+  const del = await rawStatus(`/users/subaccounts/${made2?.res?.id}`, { method: 'DELETE' }, mToken)
+  log('PROMOTED ADMIN CAN DELETE USER:', del === 200 ? 'OK' : `FAIL (${del})`)
+}
+
 const chore = (name, frequencyType, nextDueDate, extra = {}) =>
   api(
     '/chores/',
@@ -396,6 +432,7 @@ log('SHIFT INFO bad slot rejected:', JSON.stringify(badSlot).slice(0, 80))
 await shot('08-settings', '/settings', { fullPage: true })
 await shot('08b-crew-settings', '/settings/circle', { fullPage: true })
 await shot('08c-profile', '/settings/profile', { fullPage: true })
+await shot('08d-crew-users', '/settings/subaccounts', { fullPage: true })
 await shot('09-activities', '/activities', { fullPage: true })
 await shot('10-hidden-route-points', '/points')
 await shot('11-hidden-route-things', '/things')
@@ -430,7 +467,7 @@ await shot('16-mobile-create', '/tasks/create', { fullPage: true })
 await shot('17-mobile-shift-info', '/shift', { wait: 2500 })
 
 // Words that should not appear anywhere now.
-const forbidden = ['Recent Activities', 'Send nudge', 'Circle', 'circle', 'NFC', 'Privacy Policy', 'Terms of', 'Priority', 'Labels', 'Points', 'Notifications', 'Require approval', 'Things', 'Adaptive', 'Yearly', 'Donetick', 'Attachment', 'Privacy settings', 'Scheduling']
+const forbidden = ['Sub Account', 'Sub account', 'Primary Account', 'Managed Accounts', 'Recent Activities', 'Send nudge', 'Circle', 'circle', 'NFC', 'Privacy Policy', 'Terms of', 'Priority', 'Labels', 'Points', 'Notifications', 'Require approval', 'Things', 'Adaptive', 'Yearly', 'Donetick', 'Attachment', 'Privacy settings', 'Scheduling']
 for (const f of fs.readdirSync(OUT).filter(f => f.endsWith('.txt'))) {
   const txt = fs.readFileSync(`${OUT}/${f}`, 'utf8')
   const hits = forbidden.filter(w => txt.includes(w))

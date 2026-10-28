@@ -337,9 +337,10 @@ func configEnvironmentOverrides(config *Config) {
 	if os.Getenv("DONETICK_PUSHOVER_TOKEN") != "" {
 		config.Pushover.Token = os.Getenv("DONETICK_PUSHOVER_TOKEN")
 	}
-	if os.Getenv("DONETICK_DISABLE_SIGNUP") == "true" {
-		config.IsUserCreationDisabled = true
-	}
+	// CrewTAK: public signup is always off. Crew admins add people from
+	// Settings. Set DONETICK_ENABLE_SIGNUP=true to reopen it temporarily.
+	// (The very first account on an empty database can still sign up.)
+	config.IsUserCreationDisabled = os.Getenv("DONETICK_ENABLE_SIGNUP") != "true"
 
 	// Logging environment overrides
 	if os.Getenv("DONETICK_LOG_LEVEL") != "" {

@@ -86,12 +86,12 @@ func (r *UserRepository) GetUserByUsername(c context.Context, username string) (
 	var user *uModel.UserDetails
 	if r.isDonetickDotCom {
 		now := time.Now().UTC()
-		if err := r.db.WithContext(c).Preload("UserNotificationTargets").Table("users u").Select("u.*, s.status as subscription, s.expires_at as expiration, c.webhook_url as webhook_url").Joins("left join subscriptions s on s.circle_id = u.circle_id AND s.status = 'active' AND (s.expires_at IS NULL OR s.expires_at > ?)", now).Joins("left join circles c on c.id = u.circle_id").Where("username = ?", username).First(&user).Error; err != nil {
+		if err := r.db.WithContext(c).Preload("UserNotificationTargets").Table("users u").Select("u.*, s.status as subscription, s.expires_at as expiration, c.webhook_url as webhook_url").Joins("left join subscriptions s on s.circle_id = u.circle_id AND s.status = 'active' AND (s.expires_at IS NULL OR s.expires_at > ?)", now).Joins("left join circles c on c.id = u.circle_id").Where("LOWER(u.username) = LOWER(?)", username).First(&user).Error; err != nil {
 			return nil, err
 		}
 	} else {
 		// For self-hosted, first get the user without subscription/expiration fields
-		if err := r.db.WithContext(c).Preload("UserNotificationTargets").Table("users u").Select("u.*, c.webhook_url as webhook_url").Joins("left join circles c on c.id = u.circle_id").Where("username = ?", username).First(&user).Error; err != nil {
+		if err := r.db.WithContext(c).Preload("UserNotificationTargets").Table("users u").Select("u.*, c.webhook_url as webhook_url").Joins("left join circles c on c.id = u.circle_id").Where("LOWER(u.username) = LOWER(?)", username).First(&user).Error; err != nil {
 			return nil, err
 		}
 		// Then manually set the subscription status and expiration for self-hosted users
@@ -140,6 +140,27 @@ func (r *UserRepository) GetUserByID(c context.Context, userID int) (*uModel.Use
 func (r *UserRepository) GetChildUsersByParentID(c context.Context, parentID int) ([]*uModel.User, error) {
 	var childUsers []*uModel.User
 	if err := r.db.WithContext(c).Where("parent_user_id = ? AND user_type = ?", parentID, uModel.UserTypeChild).Find(&childUsers).Error; err != nil {
+		return nil, err
+	}
+	return childUsers, nil
+}
+
+// CountUsers returns how many accounts exist.
+func (r *UserRepository) CountUsers(c context.Context) (int64, error) {
+	var count int64
+	err := r.db.WithContext(c).Model(&uModel.User{}).Count(&count).Error
+	return count, err
+}
+
+// GetChildUsersByCircleID returns every crew login (non-owner account) that
+// belongs to the given crew, whichever admin created it.
+func (r *UserRepository) GetChildUsersByCircleID(c context.Context, circleID int) ([]*uModel.User, error) {
+	var childUsers []*uModel.User
+	if err := r.db.WithContext(c).
+		Where("user_type = ? AND (circle_id = ? OR id IN (?))", uModel.UserTypeChild, circleID,
+			r.db.Table("user_circles").Select("user_id").Where("circle_id = ?", circleID)).
+		Order("display_name").
+		Find(&childUsers).Error; err != nil {
 		return nil, err
 	}
 	return childUsers, nil
