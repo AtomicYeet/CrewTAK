@@ -1,0 +1,40 @@
+URL: http://localhost:2021/tasks/1
+
+Daily Truck Inspections/SCBA Inspections
+Due 10/29/2026 11:59 PM
+
+Assignment
+
+Assigned: N/A
+
+Last: Crew Test
+
+Schedule
+
+Due: in a day
+
+Last: a minute ago
+
+Statistics
+
+Completed: 1 times
+
+Details
+
+Created By: Crew Test
+
+History
+Edit
+More
+
+Previous note:
+
+All good
+
+Task Actions
+
+Add a note
+Set custom completion time
+Mark as done
+Skip
+Start

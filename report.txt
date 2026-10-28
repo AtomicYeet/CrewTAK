@@ -1,0 +1,75 @@
+login ok: true
+SIGNUP CLOSED: OK
+CREW USER USERNAME: smokemember OK
+CREW USER DUPLICATE REJECTED: OK
+CREW USER PLAIN LOGIN (any case): OK
+MEMBER CANNOT MANAGE USERS: OK
+PROMOTED ADMIN CAN LIST USERS: OK
+PROMOTED ADMIN CAN ADD USER: OK
+PROMOTED ADMIN CAN RESET PASSWORD: OK
+PROMOTED ADMIN CAN DELETE USER: OK
+created chores: [1,2,3,4,5,6,7,8]
+project created: 1
+UNDO result: {"message":"Successfully undid completion action","res":{"completionActions":null,"id":4,"name":"Take out Station Garbag | due after undo: 2026-10-29T02:00:00Z | original due: 2026-10-29T02:00:00Z
+PHOTO upload: 200 {"sign":"profiles/1/11e16053-6741-4523-a2d0-75168dd8315f.png"}
+PHOTO fetch: 200 image/png http://localhost:2021/api/v1/assets/profiles/1/11e16053-6741-4523-a2d0-75168dd8315f.png
+after login url: http://localhost:2021/home
+shot 01-home: http://localhost:2021/home
+shot 01b-home-quick-add: http://localhost:2021/home
+shot 02-tasks: http://localhost:2021/tasks
+REDIRECT /chores -> /tasks
+shot 02b-tasks-repeats: http://localhost:2021/tasks
+REPEATS daily truck occurrences on /tasks: 14 OK
+shot 02c-tasks-all-projects: http://localhost:2021/tasks?project=all
+ALL PROJECTS shows project task: OK | shows default task: OK
+shot 02d-tasks-calendar: http://localhost:2021/tasks?project=all
+shot 03-create: http://localhost:2021/tasks/create
+shot 04-create-custom-repeat: http://localhost:2021/tasks/create
+shot 05-quick-add: http://localhost:2021/tasks
+shot 06-task-view: http://localhost:2021/tasks/1
+shot 06b-task-menu: http://localhost:2021/tasks/1
+shot 07-log: http://localhost:2021/log
+shot 07b-log-entry: http://localhost:2021/log
+shot 07c-shift-info-empty: http://localhost:2021/shift
+shot 07d-shift-info-picker: http://localhost:2021/shift
+SHIFT INFO captain after reload: "Captain'sCrew Test" | expected to contain: "CTCrew Test" MISMATCH
+WATCH DAY 2 after reload: Day 2 8p – 1130p → Tap to assign 1130p – 3a → Crew Test 3a – 7a → Tap to assign OK
+DINNER DAY 1 after reload: Day 1 Today Cooking → Crew Test 21/255 | note: "Tacos, rice and beans" OK
+shot 07e-shift-info-filled: http://localhost:2021/shift
+API PUT /crewtak/shift-info -> 400 {"error":"Unknown tour or slot"}
+RIG slot/user mismatch rejected: OK
+WATCH one-per-person, RIGS many-to-many: {"company.5132.u1":1,"company.5181.u1":1,"phone.ff1":null,"phone.ops":1,"sleep.1.0":null,"sleep.1.2":1,"sleep.2.1":1} OK
+PHONES one-per-person: {"phone.ff1":null,"phone.ops":1} | cleared: ["phone.ff1"] OK
+API PUT /crewtak/shift-info -> 400 {"error":"Keep the description to 255 characters"}
+API PUT /crewtak/shift-info -> 400 {"error":"Unknown tour or slot"}
+DINNER API: {"tour":"2030-02-01","slot":"dinner.2.note","userId":null,"note":"Chili night","updatedBy":1,"updatedAt":"2026-10-28T20:42:41.012909648Z"} OK | 256 chars rejected: OK | note+user rejected: OK
+METAR API: {"res":{"station":"KATW","raw":"KATW 281945Z 16009KT 10SM SCT100 22/12 A3006","tempC":22,"text":"Partly Cloudy","time":"2026-10-28T19:45:00Z","source":"aviationweather.gov"}} OK
+API PUT /crewtak/shift-info -> 400 {"error":"Unknown tour or slot"}
+SHIFT INFO bad slot rejected: {"error":"Unknown tour or slot"}
+CLEAR OVERDUE before: Early AM Perimeter | Old one-off chore | Crash Phone Test with ATCT
+shot 18-home-clear-button: http://localhost:2021/home
+CLEAR OVERDUE after: none OK | perimeter next due: 2026-10-29T11:30:00Z | one-off still active: false
+CLEAR OVERDUE perimeter history: status=2 by=1
+shot 08-settings: http://localhost:2021/settings
+shot 08b-crew-settings: http://localhost:2021/settings/circle
+shot 08c-profile: http://localhost:2021/settings/profile
+shot 08d-crew-users: http://localhost:2021/settings/subaccounts
+shot 09-activities: http://localhost:2021/home
+shot 10-hidden-route-points: http://localhost:2021/home
+shot 11-hidden-route-things: http://localhost:2021/home
+shot 11b-training: http://localhost:2021/training
+shot 12-nav: http://localhost:2021/tasks
+shot 13-display-tv: http://localhost:2021/display
+DISPLAY CLOCK: WED, OCTOBER 28 15:43|20:43Z OK
+DISPLAY WEATHER: TODAY 71° / 54° Sunny TOMORROW 62° / 37° Mostly Sunny
+DISPLAY METAR: KATW METAR KATW 281945Z 16009KT 10SM SCT100 22/12 A3006 Now 72°F · Partly Cloudy 59 min ago
+DISPLAY WATCH: WATCH · DAY 1 8p – 1130p Crew Test 1130p – 3a — 3a – 7a — WATCH · DAY 2 8p – 1130p — 1130p – 3a Crew Test 3a – 7a — OK
+DISPLAY LOGO REMOVED: OK
+shot 14-display-tablet: http://localhost:2021/display
+shot 15-mobile-tasks: http://localhost:2021/tasks
+shot 16-mobile-create: http://localhost:2021/tasks/create
+shot 17-mobile-shift-info: http://localhost:2021/shift
+TEXT CHECK 08b-crew-settings.txt: contains circle
+TEXT CHECK report.txt: contains circle
+console errors: 1
+   pageerror: Transition was skipped. New ViewTransition started

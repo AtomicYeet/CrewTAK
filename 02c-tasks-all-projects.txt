@@ -1,0 +1,509 @@
+URL: http://localhost:2021/tasks?project=all
+
+All Projects
+
+0 tasks selected
+
+All
+Close
+Complete
+Due
+Skip
+Move
+Archive
+Delete
+More
+
+Upcoming repeats
+
+2 weeks
+Overdue
+3
+Start
+Skip
+6 days ago
+Daily
+E
+
+Early AM Perimeter
+
+Anyone
+Schedule
+Edit
+Delete
+Start
+Skip
+2 days ago
+O
+
+Old one-off chore
+
+Anyone
+Schedule
+Edit
+Delete
+Start
+Skip
+a day ago
+Daily
+C
+
+Crash Phone Test with ATCT
+
+Anyone
+Schedule
+Edit
+Delete
+Today
+1
+Start
+Skip
+Today 9:00 PM
+Daily
+T
+
+Take out Station Garbages
+
+Anyone
+Schedule
+Edit
+Delete
+Tomorrow · Thursday, Oct 29
+5
+
+Early AM Perimeter
+
+Daily • Anyone
+Thu, Oct 29 · 6:30 AM
+
+Crash Phone Test with ATCT
+
+Daily • Anyone
+Thu, Oct 29 · 10:00 AM
+
+Take out Station Garbages
+
+Daily • Anyone
+Thu, Oct 29 · 9:00 PM
+Start
+Skip
+Tomorrow 11:59 PM
+Daily
+D
+
+Daily Truck Inspections/SCBA Inspections
+
+Anyone
+Schedule
+Edit
+Delete
+Start
+Skip
+Tomorrow 11:59 PM
+Weekly
+W
+
+Water Softener Salt Check
+
+Anyone
+Schedule
+Edit
+Delete
+Friday, Oct 30
+5
+
+Early AM Perimeter
+
+Daily • Anyone
+Fri, Oct 30 · 6:30 AM
+
+Crash Phone Test with ATCT
+
+Daily • Anyone
+Fri, Oct 30 · 10:00 AM
+
+Take out Station Garbages
+
+Daily • Anyone
+Fri, Oct 30 · 9:00 PM
+Start
+Skip
+in 2 days
+Weekly
+E
+
+Extinguisher Check Hangar
+
+Anyone
+Schedule
+Edit
+Delete
+
+Daily Truck Inspections/SCBA Inspections
+
+Daily • Anyone
+Fri, Oct 30 · 11:59 PM
+Saturday, Oct 31
+5
+
+Early AM Perimeter
+
+Daily • Anyone
+Sat, Oct 31 · 6:30 AM
+
+Crash Phone Test with ATCT
+
+Daily • Anyone
+Sat, Oct 31 · 10:00 AM
+
+Take out Station Garbages
+
+Daily • Anyone
+Sat, Oct 31 · 9:00 PM
+Start
+Skip
+in 3 days
+5
+
+5133 MEDBAG Check
+
+Anyone
+Schedule
+Edit
+Delete
+
+Daily Truck Inspections/SCBA Inspections
+
+Daily • Anyone
+Sat, Oct 31 · 11:59 PM
+Sunday, Nov 1
+4
+
+Early AM Perimeter
+
+Daily • Anyone
+Sun, Nov 1 · 6:30 AM
+
+Crash Phone Test with ATCT
+
+Daily • Anyone
+Sun, Nov 1 · 10:00 AM
+
+Take out Station Garbages
+
+Daily • Anyone
+Sun, Nov 1 · 9:00 PM
+
+Daily Truck Inspections/SCBA Inspections
+
+Daily • Anyone
+Sun, Nov 1 · 11:59 PM
+Monday, Nov 2
+4
+
+Early AM Perimeter
+
+Daily • Anyone
+Mon, Nov 2 · 6:30 AM
+
+Crash Phone Test with ATCT
+
+Daily • Anyone
+Mon, Nov 2 · 10:00 AM
+
+Take out Station Garbages
+
+Daily • Anyone
+Mon, Nov 2 · 9:00 PM
+
+Daily Truck Inspections/SCBA Inspections
+
+Daily • Anyone
+Mon, Nov 2 · 11:59 PM
+Tuesday, Nov 3
+4
+
+Early AM Perimeter
+
+Daily • Anyone
+Tue, Nov 3 · 6:30 AM
+
+Crash Phone Test with ATCT
+
+Daily • Anyone
+Tue, Nov 3 · 10:00 AM
+
+Take out Station Garbages
+
+Daily • Anyone
+Tue, Nov 3 · 9:00 PM
+
+Daily Truck Inspections/SCBA Inspections
+
+Daily • Anyone
+Tue, Nov 3 · 11:59 PM
+Wednesday, Nov 4
+5
+
+Early AM Perimeter
+
+Daily • Anyone
+Wed, Nov 4 · 6:30 AM
+
+Crash Phone Test with ATCT
+
+Daily • Anyone
+Wed, Nov 4 · 10:00 AM
+
+Take out Station Garbages
+
+Daily • Anyone
+Wed, Nov 4 · 9:00 PM
+Start
+Skip
+in 7 days
+Weekly
+W
+
+Wash and Detail Airport 5132
+
+Anyone
+Schedule
+Edit
+Delete
+
+Daily Truck Inspections/SCBA Inspections
+
+Daily • Anyone
+Wed, Nov 4 · 11:59 PM
+Thursday, Nov 5
+5
+
+Early AM Perimeter
+
+Daily • Anyone
+Thu, Nov 5 · 6:30 AM
+
+Crash Phone Test with ATCT
+
+Daily • Anyone
+Thu, Nov 5 · 10:00 AM
+
+Take out Station Garbages
+
+Daily • Anyone
+Thu, Nov 5 · 9:00 PM
+
+Daily Truck Inspections/SCBA Inspections
+
+Daily • Anyone
+Thu, Nov 5 · 11:59 PM
+
+Water Softener Salt Check
+
+Weekly • Anyone
+Thu, Nov 5 · 11:59 PM
+Friday, Nov 6
+5
+
+Early AM Perimeter
+
+Daily • Anyone
+Fri, Nov 6 · 6:30 AM
+
+Crash Phone Test with ATCT
+
+Daily • Anyone
+Fri, Nov 6 · 10:00 AM
+
+Take out Station Garbages
+
+Daily • Anyone
+Fri, Nov 6 · 9:00 PM
+
+Daily Truck Inspections/SCBA Inspections
+
+Daily • Anyone
+Fri, Nov 6 · 11:59 PM
+
+Extinguisher Check Hangar
+
+Weekly • Anyone
+Fri, Nov 6 · 11:59 PM
+Saturday, Nov 7
+4
+
+Early AM Perimeter
+
+Daily • Anyone
+Sat, Nov 7 · 6:30 AM
+
+Crash Phone Test with ATCT
+
+Daily • Anyone
+Sat, Nov 7 · 10:00 AM
+
+Take out Station Garbages
+
+Daily • Anyone
+Sat, Nov 7 · 9:00 PM
+
+Daily Truck Inspections/SCBA Inspections
+
+Daily • Anyone
+Sat, Nov 7 · 11:59 PM
+Sunday, Nov 8
+4
+
+Early AM Perimeter
+
+Daily • Anyone
+Sun, Nov 8 · 6:30 AM
+
+Crash Phone Test with ATCT
+
+Daily • Anyone
+Sun, Nov 8 · 10:00 AM
+
+Take out Station Garbages
+
+Daily • Anyone
+Sun, Nov 8 · 9:00 PM
+
+Daily Truck Inspections/SCBA Inspections
+
+Daily • Anyone
+Sun, Nov 8 · 11:59 PM
+Monday, Nov 9
+4
+
+Early AM Perimeter
+
+Daily • Anyone
+Mon, Nov 9 · 6:30 AM
+
+Crash Phone Test with ATCT
+
+Daily • Anyone
+Mon, Nov 9 · 10:00 AM
+
+Take out Station Garbages
+
+Daily • Anyone
+Mon, Nov 9 · 9:00 PM
+
+Daily Truck Inspections/SCBA Inspections
+
+Daily • Anyone
+Mon, Nov 9 · 11:59 PM
+Tuesday, Nov 10
+4
+
+Early AM Perimeter
+
+Daily • Anyone
+Tue, Nov 10 · 6:30 AM
+
+Crash Phone Test with ATCT
+
+Daily • Anyone
+Tue, Nov 10 · 10:00 AM
+
+Take out Station Garbages
+
+Daily • Anyone
+Tue, Nov 10 · 9:00 PM
+
+Daily Truck Inspections/SCBA Inspections
+
+Daily • Anyone
+Tue, Nov 10 · 11:59 PM
+Wednesday, Nov 11
+5
+
+Early AM Perimeter
+
+Daily • Anyone
+Wed, Nov 11 · 6:30 AM
+
+Crash Phone Test with ATCT
+
+Daily • Anyone
+Wed, Nov 11 · 10:00 AM
+
+Take out Station Garbages
+
+Daily • Anyone
+Wed, Nov 11 · 9:00 PM
+
+Wash and Detail Airport 5132
+
+Weekly • Anyone
+Wed, Nov 11 · 10:59 PM
+
+Daily Truck Inspections/SCBA Inspections
+
+Daily • Anyone
+Wed, Nov 11 · 11:59 PM
+
+View tasks as
+
+Switch to user view
+
+Tasks will be filtered to show only assignments for selected user
+
+Choose User
+
+No one has tasks yet
+
+Assign a task to someone in your crew and their workload shows up here.
+
+Calendar Overview
+
+«
+‹
+October 2026
+›
+»
+S
+M
+T
+W
+T
+F
+S
+27
+28
+29
+30
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31

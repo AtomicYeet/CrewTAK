@@ -1,0 +1,95 @@
+URL: http://localhost:2021/home
+
+3 tasks need attention.
+3
+Overdue
+1
+Due today
+2
+Coming up
+CLEAR ALL OVERDUE TASKS
+
+Your crew
+
+Manage Crew
+S
+Smoke Member
+All clear
+
+Overdue
+
+View all
+Start
+Skip
+
+Early AM Perimeter
+
+6 days ago
+Daily • Anyone
+Schedule
+Edit
+Delete
+Start
+Skip
+
+Old one-off chore
+
+2 days ago
+Anyone
+Schedule
+Edit
+Delete
+Start
+Skip
+
+Crash Phone Test with ATCT
+
+a day ago
+Daily • Anyone
+Schedule
+Edit
+Delete
+
+Coming up
+
+View all
+Start
+Skip
+
+Take out Station Garbages
+
+Today 9:00 PM
+Daily • Anyone
+Schedule
+Edit
+Delete
+Start
+Skip
+
+Daily Truck Inspections/SCBA Inspections
+
+Tomorrow 11:59 PM
+Daily • Anyone
+Schedule
+Edit
+Delete
+Start
+Skip
+
+Water Softener Salt Check
+
+Tomorrow 11:59 PM
+Weekly • Anyone
+Schedule
+Edit
+Delete
+
+Projects
+
+All projects
+Default Project
+8 tasks, 3 overdue
+Monthly Fire Extinguishers
+1 task
+
+Add a task…

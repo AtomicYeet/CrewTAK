@@ -1,0 +1,118 @@
+URL: http://localhost:2021/shift
+
+Shift Info
+
+15:42
+
+Wednesday 28 October 2026
+
+A Shift · Day 1
+
+PHONE ASSIGNMENTS
+
+CAPTAIN'S
+
+Tap to assign
+
+FIREFIGHTER 1
+
+Tap to assign
+
+FIREFIGHTER 2
+
+Tap to assign
+
+OPS
+
+Tap to assign
+
+WATCH TIMES
+
+Day 1
+Today
+
+8p – 1130p
+
+→
+
+Tap to assign
+
+1130p – 3a
+
+→
+
+Tap to assign
+
+3a – 7a
+
+→
+
+Tap to assign
+
+Day 2
+
+8p – 1130p
+
+→
+
+Tap to assign
+
+1130p – 3a
+
+→
+
+Tap to assign
+
+3a – 7a
+
+→
+
+Tap to assign
+
+COMPANY ASSIGNMENTS
+
+5181 Crash Truck
+
+→
+
+Tap to assign
+
+5182 Crash Truck
+
+→
+
+Tap to assign
+
+5184 Fire/EMS
+
+→
+
+Tap to assign
+
+5132 EMS
+
+→
+
+Tap to assign
+
+DINNER PLANS
+
+Day 1
+Today
+
+Cooking
+
+→
+
+Tap to assign
+
+0/255
+Day 2
+
+Cooking
+
+→
+
+Tap to assign
+
+0/255

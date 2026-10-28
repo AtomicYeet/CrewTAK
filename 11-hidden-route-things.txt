@@ -1,0 +1,58 @@
+URL: http://localhost:2021/home
+
+1 task due today.
+1
+Due today
+4
+Coming up
+
+Your crew
+
+Manage Crew
+S
+Smoke Member
+All clear
+
+Coming up
+
+View all
+Start
+Skip
+
+Take out Station Garbages
+
+Today 9:00 PM
+Daily • Anyone
+Schedule
+Edit
+Delete
+Start
+Skip
+
+Early AM Perimeter
+
+Tomorrow 6:30 AM
+Daily • Anyone
+Schedule
+Edit
+Delete
+Start
+Skip
+
+Crash Phone Test with ATCT
+
+Tomorrow 10:00 AM
+Daily • Anyone
+Schedule
+Edit
+Delete
+
+Projects
+
+All projects
+Default Project
+7 tasks
+Monthly Fire Extinguishers
+1 task
+
+Add a task…
