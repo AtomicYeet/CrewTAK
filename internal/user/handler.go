@@ -1476,6 +1476,13 @@ type CreateChildUserRequest struct {
 	ChildName   string `json:"childName" binding:"required,min=2,max=20"`
 	DisplayName string `json:"displayName"`
 	Password    string `json:"password" binding:"required,min=8,max=64"`
+	CrewShift   string `json:"crewShift"`
+}
+
+// UpdateCrewShiftRequest sets which crew group a user is in.
+type UpdateCrewShiftRequest struct {
+	UserID    int    `json:"userId" binding:"required"`
+	CrewShift string `json:"crewShift"`
 }
 
 // UpdateChildPasswordRequest represents the request to update a child user's password
@@ -1490,6 +1497,7 @@ type ChildUserResponse struct {
 	Username    string `json:"username"`
 	DisplayName string `json:"displayName"`
 	UserType    string `json:"userType"`
+	CrewShift   string `json:"crewShift"`
 	CreatedAt   string `json:"createdAt"`
 }
 
@@ -1565,6 +1573,11 @@ func (h *Handler) createChildUser(c *gin.Context) {
 	if req.DisplayName == "" {
 		req.DisplayName = req.ChildName
 	}
+	crewShift, okShift := uModel.NormalizeCrewShift(req.CrewShift)
+	if !okShift {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Shift must be A, B, C, Ops or Chief"})
+		return
+	}
 
 	encodedPassword, err := auth.EncodePassword(req.Password)
 	if err != nil {
@@ -1580,6 +1593,7 @@ func (h *Handler) createChildUser(c *gin.Context) {
 		ParentUserID: crewAccountOwnerID(manager),
 		UserType:     uModel.UserTypeChild,
 		Provider:     uModel.AuthProviderDonetick,
+		CrewShift:    crewShift,
 		CreatedAt:    time.Now().UTC(),
 		UpdatedAt:    time.Now().UTC(),
 	}
@@ -1612,6 +1626,7 @@ func (h *Handler) createChildUser(c *gin.Context) {
 		Username:    createdUser.Username,
 		DisplayName: createdUser.DisplayName,
 		UserType:    "child",
+		CrewShift:   createdUser.CrewShift,
 		CreatedAt:   createdUser.CreatedAt.Format(time.RFC3339),
 	}})
 }
@@ -1644,6 +1659,37 @@ func (h *Handler) updateChildPassword(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Password updated"})
+}
+
+// updateCrewShift sets which crew group (A, B, C, Ops, Chief) a crew login
+// is in. Crew admins only, same as the other Crew Users actions.
+func (h *Handler) updateCrewShift(c *gin.Context) {
+	manager, ok := h.crewManager(c)
+	if !ok {
+		return
+	}
+
+	var req UpdateCrewShiftRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	shift, valid := uModel.NormalizeCrewShift(req.CrewShift)
+	if !valid {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Shift must be A, B, C, Ops or Chief"})
+		return
+	}
+
+	if _, ok := h.managedCrewUser(c, manager, req.UserID); !ok {
+		return
+	}
+
+	if err := h.userRepo.UpdateCrewShift(c.Request.Context(), req.UserID, shift); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update shift"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"res": gin.H{"userId": req.UserID, "crewShift": shift}})
 }
 
 func (h *Handler) deleteChildUser(c *gin.Context) {
@@ -1698,6 +1744,7 @@ func (h *Handler) getChildUsers(c *gin.Context) {
 			Username:    child.Username,
 			DisplayName: child.DisplayName,
 			UserType:    "child",
+			CrewShift:   child.CrewShift,
 			CreatedAt:   child.CreatedAt.Format(time.RFC3339),
 		})
 	}
@@ -1807,6 +1854,7 @@ func Routes(router *gin.Engine, h *Handler, jwtAuth *jwt.GinJWTMiddleware, multi
 		userRoutes.POST("/subaccounts", h.createChildUser)
 		userRoutes.GET("/subaccounts", h.getChildUsers)
 		userRoutes.PUT("/subaccounts/password", h.updateChildPassword)
+		userRoutes.PUT("/subaccounts/shift", h.updateCrewShift)
 		userRoutes.DELETE("/subaccounts/:id", h.deleteChildUser)
 	}
 

@@ -190,6 +190,11 @@ func (r *UserRepository) UpdateUser(c context.Context, user *uModel.User) error 
 	})
 }
 
+// UpdateCrewShift sets which crew group (A/B/C/OPS/CHIEF, or "") a user is in.
+func (r *UserRepository) UpdateCrewShift(c context.Context, userID int, shift string) error {
+	return r.db.WithContext(c).Model(&uModel.User{}).Where("id = ?", userID).Update("crew_shift", shift).Error
+}
+
 func (r *UserRepository) UpdateUserCircle(c context.Context, userID, circleID int) error {
 	return r.db.WithContext(c).Model(&uModel.User{}).Where("id = ?", userID).Update("circle_id", circleID).Error
 }

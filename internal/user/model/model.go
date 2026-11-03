@@ -20,6 +20,9 @@ type User struct {
 	ChatID      int64            `json:"chatID" gorm:"column:chat_id"`                                               // Telegram chat ID
 	Image       string           `json:"image" gorm:"column:image"`                                                  // Image
 	Timezone    string           `json:"timezone" gorm:"column:timezone"`                                            // Timezone
+	// CrewTAK: which crew group the person belongs to (A, B, C, OPS, CHIEF;
+	// empty when not set). Shown under their name on profiles.
+	CrewShift string `json:"crewShift" gorm:"column:crew_shift;default:''"`
 	// Parent-Child relationship fields
 	ParentUserID *int     `json:"parentUserId,omitempty" gorm:"column:parent_user_id;index"`
 	UserType     UserType `json:"userType" gorm:"column:user_type;default:0"`
@@ -267,4 +270,25 @@ func (u User) ValidateParentUser() error {
 	}
 
 	return nil
+}
+
+// CrewTAK crew groups a user can belong to.
+const (
+	CrewShiftA     = "A"
+	CrewShiftB     = "B"
+	CrewShiftC     = "C"
+	CrewShiftOps   = "OPS"
+	CrewShiftChief = "CHIEF"
+)
+
+// NormalizeCrewShift returns the stored form of a crew shift ("" clears it)
+// and whether it is one of the allowed values.
+func NormalizeCrewShift(s string) (string, bool) {
+	v := strings.ToUpper(strings.TrimSpace(s))
+	switch v {
+	case "", CrewShiftA, CrewShiftB, CrewShiftC, CrewShiftOps, CrewShiftChief:
+		return v, true
+	default:
+		return "", false
+	}
 }

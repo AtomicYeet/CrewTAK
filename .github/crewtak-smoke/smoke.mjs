@@ -96,6 +96,21 @@ log('login ok:', Boolean(token))
   log('PROMOTED ADMIN CAN RESET PASSWORD:', reset === 200 && (relog.access_token || relog.token) ? 'OK' : `FAIL (${reset})`)
   const del = await rawStatus(`/users/subaccounts/${made2?.res?.id}`, { method: 'DELETE' }, mToken)
   log('PROMOTED ADMIN CAN DELETE USER:', del === 200 ? 'OK' : `FAIL (${del})`)
+
+  // Crew shift (A/B/C/Ops/Chief) shown under each person's name.
+  const madeC = await api('/users/subaccounts', { method: 'POST', body: JSON.stringify({ childName: 'smokeshift', displayName: 'Smoke Shift', password: 'shift-pass-1', crewShift: 'c' }) }, token)
+  log('CREW SHIFT ON CREATE:', madeC?.res?.crewShift === 'C' ? 'OK' : `FAIL (${JSON.stringify(madeC?.res)})`)
+  const setShift = await rawStatus('/users/subaccounts/shift', { method: 'PUT', body: JSON.stringify({ userId: made?.res?.id, crewShift: 'CHIEF' }) }, token)
+  const badShift = await rawStatus('/users/subaccounts/shift', { method: 'PUT', body: JSON.stringify({ userId: made?.res?.id, crewShift: 'D' }) }, token)
+  const listedShift = ((await api('/users/subaccounts', {}, token))?.res || []).find(u => u.id === made?.res?.id)
+  const memberShift = ((await api('/circles/members', {}, token))?.res || []).find(m => m.userId === madeC?.res?.id)
+  log('CREW SHIFT SET:', setShift === 200 && listedShift?.crewShift === 'CHIEF' ? 'OK' : `FAIL (${setShift} ${listedShift?.crewShift})`,
+    '| bad value rejected:', badShift === 400 ? 'OK' : `FAIL (${badShift})`,
+    '| on crew members:', memberShift?.crewShift === 'C' ? 'OK' : `FAIL (${memberShift?.crewShift})`)
+  // Move them to B, then check an ordinary member can't change shifts.
+  await api('/users/subaccounts/shift', { method: 'PUT', body: JSON.stringify({ userId: madeC?.res?.id, crewShift: 'B' }) }, token)
+  const memberCannotSet = await rawStatus('/users/subaccounts/shift', { method: 'PUT', body: JSON.stringify({ userId: madeC?.res?.id, crewShift: 'A' }) }, (await api('/auth/login', { method: 'POST', body: JSON.stringify({ username: 'smokeshift', password: 'shift-pass-1' }) })).access_token)
+  log('CREW SHIFT MEMBER CANNOT SET:', memberCannotSet === 403 ? 'OK' : `FAIL (${memberCannotSet})`)
 }
 
 const chore = (name, frequencyType, nextDueDate, extra = {}) =>
@@ -466,6 +481,37 @@ await shot('13-display-tv', '/display', { wait: 6000 })
   log('DISPLAY WATCH:', watch, /DAY 1.*DAY 2/i.test(watch) ? 'OK' : 'FAIL')
   const logo = await page.locator('img[src*="logo"]').count()
   log('DISPLAY LOGO REMOVED:', logo === 0 ? 'OK' : 'FAIL')
+  // Weather wording must not be cut off: every line fits its box.
+  const cut = await page.getByTestId('weather-widget').evaluate(el =>
+    [...el.querySelectorAll('p, span')].filter(n => n.scrollWidth > n.clientWidth + 1 || n.scrollHeight > n.clientHeight + 1).map(n => n.textContent),
+  ).catch(e => [`error: ${e.message}`])
+  log('DISPLAY WEATHER NOT TRUNCATED:', cut.length === 0 ? 'OK' : `FAIL (${cut.join(' | ')})`)
+}
+// Edit straight from the board: tap FF2 phone, pick someone, check it saved.
+try {
+  await page.getByTestId('display-slot-phone.ff2').locator('[role=button]').click()
+  await page.waitForTimeout(700)
+  await page.screenshot({ path: `${OUT}/13b-display-phone-picker.png` })
+  const who = (await page.locator('[role=dialog] li [role=button]').filter({ hasNotText: /clear/i }).first().innerText()).split('\n')[0].trim()
+  await page.locator('[role=dialog] li [role=button]').filter({ hasNotText: /clear/i }).first().click()
+  await page.waitForTimeout(1500)
+  const row = (await page.getByTestId('display-slot-phone.ff2').innerText().catch(() => '')).replace(/\s+/g, ' ')
+  log('DISPLAY EDIT PHONE:', row, '| picked:', who, row.includes(who) ? 'OK' : 'FAIL')
+  await page.getByTestId('display-slot-company.5184').locator('[role=button]').click()
+  await page.waitForTimeout(700)
+  await page.locator('[role=dialog] li [role=button]').filter({ hasNotText: /done/i }).first().click()
+  await page.waitForTimeout(800)
+  await page.screenshot({ path: `${OUT}/13c-display-rig-picker.png` })
+  await page.getByRole('button', { name: /^done$/i }).first().click()
+  await page.waitForTimeout(800)
+  await page.reload()
+  await page.waitForTimeout(4000)
+  const ff2 = (await page.getByTestId('display-slot-phone.ff2').innerText().catch(() => '')).replace(/\s+/g, ' ')
+  const rig = (await page.getByTestId('display-slot-company.5184').innerText().catch(() => '')).replace(/\s+/g, ' ')
+  log('DISPLAY EDIT SAVED (after reload):', ff2, '|', rig, ff2.includes(who) && !/—/.test(rig) ? 'OK' : 'FAIL')
+  await shot('13d-display-after-edit', null, { wait: 500 })
+} catch (e) {
+  log('DISPLAY EDIT flow failed:', e.message)
 }
 await page.setViewportSize({ width: 820, height: 1180 })
 await shot('14-display-tablet', '/display', { wait: 3000 })

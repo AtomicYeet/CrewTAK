@@ -51,6 +51,7 @@ type UserCircleDetail struct {
 	NotificationType nModel.NotificationPlatform `json:"-" gorm:"column:notification_type"`
 	TargetID         string                      `json:"-" gorm:"column:target_id"` // Target ID
 	Image            string                      `json:"image" gorm:"column:image"` // Image
+	CrewShift        string                      `json:"crewShift" gorm:"column:crew_shift"`
 }
 
 type Role string
