@@ -1,0 +1,49 @@
+URL: http://localhost:2021/settings/circle
+
+Crew Settings
+
+Your account is automatically connected to a Crew when you create or join one. You can easily invite friends by sharing the unique Crew code or link below. You'll receive a notification below when someone requests to join your Crew.
+
+Crew Test's crew
+
+Your crew code is:
+
+gUxB_jFAlXn8xaJL
+
+Copy Code
+Share Invite
+
+Crew Member Requests
+0
+
+Last updated: 11/02/2026 7:26 PM
+
+Crew Members
+3
+
+Crew Test (You)
+
+Admin
+Joined on 11/02/2026
+S
+
+Smoke Member
+
+Admin
+Chief
+Joined on 11/02/2026
+Admin
+S
+
+Smoke Shift
+
+Member
+B Shift
+Joined on 11/02/2026
+Member
+
+Enter Crew code:
+
+Want to join someone else's Crew? Ask them for their unique Crew code or join link. Enter the code below to join their Crew.
+
+Join Crew

@@ -1,0 +1,94 @@
+URL: http://localhost:2021/display
+
+TONIGHT
+
+57°
+
+Showers And Thunderstorms then Chance Showers And Thunderstorms · 90%
+
+TOMORROW
+
+66° / 57°
+
+Showers And Thunderstorms · 91%
+
+MON, NOVEMBER 2
+
+19:27|01:27Z
+
+C SHIFT · DAY 2
+
+11 Hours and 33 Minutes
+until shift change
+
+KATW METAR
+
+KATW 030045Z 16014G21KT 6SM -DZ OVC007 14/14 A2992
+
+Now 57°F · Light Drizzle
+
+42 min ago
+
+PHONES
+
+Captain
+
+Crew Test
+
+FF1
+
+—
+
+FF2
+
+—
+
+Ops
+
+—
+
+WATCH · DAY 1
+
+8p – 1130p
+
+Crew Test
+
+1130p – 3a
+
+—
+
+3a – 7a
+
+—
+
+WATCH · DAY 2
+
+8p – 1130p
+
+—
+
+1130p – 3a
+
+Crew Test
+
+3a – 7a
+
+—
+
+RIG ASSIGNMENTS
+
+5181 Crash
+
+Crew Test
+
+5182 Crash
+
+—
+
+5184 Fire/EMS
+
+—
+
+5132 EMS
+
+—
