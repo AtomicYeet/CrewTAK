@@ -321,7 +321,7 @@ await shot('07d-shift-info-picker', null, {
 })
 try {
   const firstPerson = page.locator('[role=dialog] li [role=button]').filter({ hasNotText: /clear/i }).first()
-  const picked = (await firstPerson.textContent())?.trim()
+  const picked = (await firstPerson.locator('.MuiListItemContent-root').innerText()).split('\n')[0].trim()
   await firstPerson.click()
   await page.waitForTimeout(800)
   await page.getByRole('button', { name: /8p/ }).first().click()
@@ -492,7 +492,7 @@ try {
   await page.getByTestId('display-slot-phone.ff2').locator('[role=button]').click()
   await page.waitForTimeout(700)
   await page.screenshot({ path: `${OUT}/13b-display-phone-picker.png` })
-  const who = (await page.locator('[role=dialog] li [role=button]').filter({ hasNotText: /clear/i }).first().innerText()).split('\n')[0].trim()
+  const who = (await page.locator('[role=dialog] li [role=button]').filter({ hasNotText: /clear/i }).first().locator('.MuiListItemContent-root').innerText()).split('\n')[0].trim()
   await page.locator('[role=dialog] li [role=button]').filter({ hasNotText: /clear/i }).first().click()
   await page.waitForTimeout(1500)
   const row = (await page.getByTestId('display-slot-phone.ff2').innerText().catch(() => '')).replace(/\s+/g, ' ')
