@@ -485,6 +485,10 @@ await shot('13-display-tv', '/display', { wait: 6000 })
   const cut = await page.getByTestId('weather-widget').evaluate(el =>
     [...el.querySelectorAll('p, span')].filter(n => n.scrollWidth > n.clientWidth + 1 || n.scrollHeight > n.clientHeight + 1).map(n => n.textContent),
   ).catch(e => [`error: ${e.message}`])
+  const boardText = await page.evaluate(() => document.body.innerText)
+  const blank = await page.getByTestId('display-blank').count()
+  log('DISPLAY TASK COLUMNS HIDDEN:', blank === 1 && !/OVERDUE|DUE TODAY|DONE THIS SHIFT/i.test(boardText) ? 'OK' : 'FAIL')
+  log('DISPLAY NO PENCIL:', (await page.locator('[data-testid=EditRoundedIcon]').count()) === 0 ? 'OK' : 'FAIL')
   log('DISPLAY WEATHER NOT TRUNCATED:', cut.length === 0 ? 'OK' : `FAIL (${cut.join(' | ')})`)
 }
 // Edit straight from the board: tap FF2 phone, pick someone, check it saved.

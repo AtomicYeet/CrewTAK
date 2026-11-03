@@ -16,6 +16,9 @@
 // company.<rig>.u<userId>, set to that user (on) or null (off). Like
 // everything else here they belong to the tour, so they reset at shift change.
 //
+// At each watch change the person coming on watch takes the Captain's phone
+// and hands theirs to the previous holder; see phoneswap.go.
+//
 // Dinner plans work the same way per shift day: dinner.<day>.u<userId> for
 // each person cooking, plus dinner.<day>.note holding a short description
 // (up to 255 characters) of what dinner will be.
@@ -125,7 +128,7 @@ func (h *Handler) get(c *gin.Context) {
 	}
 	slots := []Slot{}
 	if err := h.db.WithContext(c).
-		Where("circle_id = ? AND tour = ?", user.CircleID, tour).
+		Where("circle_id = ? AND tour = ? AND slot NOT LIKE ?", user.CircleID, tour, swapPrefix+"%").
 		Find(&slots).Error; err != nil {
 		c.JSON(500, gin.H{"error": "Error loading shift info"})
 		return
