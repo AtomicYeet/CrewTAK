@@ -1,0 +1,48 @@
+URL: http://localhost:2021/settings/subaccounts
+
+Crew Users
+
+Add, reset and remove crew logins. Everyone signs in on the main login page with just their username and password.
+
+Add User
+
+Crew Users (2)
+
+S
+
+Smoke Member
+
+Chief
+
+Username: smokemember
+
+Created: 11/08/2026
+Chief
+S
+
+Smoke Shift
+
+B Shift
+
+Username: smokeshift
+
+Created: 11/08/2026
+B Shift
+
+How Crew Users Work
+
+1
+
+Crew admins add users here and can reset their passwords or remove them.
+
+2
+
+Users sign in with just their username and password.
+
+3
+
+New users start as crew members. Make someone an admin from Settings → Crew.
+
+4
+
+Admins can manage crew users and crew settings too.

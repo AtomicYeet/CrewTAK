@@ -1,0 +1,108 @@
+login ok: true
+SIGNUP CLOSED: OK
+CREW USER USERNAME: smokemember OK
+CREW USER DUPLICATE REJECTED: OK
+CREW USER PLAIN LOGIN (any case): OK
+MEMBER CANNOT MANAGE USERS: OK
+PROMOTED ADMIN CAN LIST USERS: OK
+PROMOTED ADMIN CAN ADD USER: OK
+PROMOTED ADMIN CAN RESET PASSWORD: OK
+PROMOTED ADMIN CAN DELETE USER: OK
+CREW SHIFT ON CREATE: OK
+CREW SHIFT SET: OK | bad value rejected: OK | on crew members: OK
+CREW SHIFT MEMBER CANNOT SET: OK
+created chores: [1,2,3,4,5,6,7,8]
+project created: 1
+UNDO result: {"message":"Successfully undid completion action","res":{"completionActions":null,"id":4,"name":"Take out Station Garbag | due after undo: 2026-11-09T03:00:00Z | original due: 2026-11-09T03:00:00Z
+PHOTO upload: 200 {"sign":"profiles/1/7486ae62-74b7-4d93-b5ad-b763fe1531f1.png"}
+PHOTO fetch: 200 image/png http://localhost:2021/api/v1/assets/profiles/1/7486ae62-74b7-4d93-b5ad-b763fe1531f1.png
+after login url: http://localhost:2021/home
+shot 01-home: http://localhost:2021/home
+shot 01b-home-quick-add: http://localhost:2021/home
+shot 02-tasks: http://localhost:2021/tasks
+REDIRECT /chores -> /tasks
+shot 02b-tasks-repeats: http://localhost:2021/tasks
+REPEATS daily truck occurrences on /tasks: 14 OK
+shot 02c-tasks-all-projects: http://localhost:2021/tasks?project=all
+ALL PROJECTS shows project task: OK | shows default task: OK
+shot 02d-tasks-calendar: http://localhost:2021/tasks?project=all
+shot 03-create: http://localhost:2021/tasks/create
+shot 04-create-custom-repeat: http://localhost:2021/tasks/create
+shot 05-quick-add: http://localhost:2021/tasks
+shot 06-task-view: http://localhost:2021/tasks/1
+shot 06b-task-menu: http://localhost:2021/tasks/1
+shot 07-log: http://localhost:2021/log
+shot 07b-log-entry: http://localhost:2021/log
+shot 07c-shift-info-empty: http://localhost:2021/shift
+shot 07d-shift-info-picker: http://localhost:2021/shift
+SHIFT INFO captain after reload: "Captain'sSmoke Shift" | expected to contain: "Smoke Shift" OK
+WATCH DAY 2 after reload: Day 2 Today 8p – 1130p → Tap to assign 1130p – 3a → Smoke Shift 3a – 7a → Tap to assign CHECK
+DINNER DAY 1 after reload: Day 1 Cooking → Smoke Shift 21/255 | note: "Tacos, rice and beans" OK
+shot 07e-shift-info-filled: http://localhost:2021/shift
+API PUT /crewtak/shift-info -> 400 {"error":"Unknown tour or slot"}
+RIG slot/user mismatch rejected: OK
+WATCH one-per-person, RIGS many-to-many: {"company.5132.u1":1,"company.5181.u1":1,"phone.ff1":null,"phone.ops":1,"sleep.1.0":null,"sleep.1.2":1,"sleep.2.1":1} OK
+PHONES one-per-person: {"phone.ff1":null,"phone.ops":1} | cleared: ["phone.ff1"] OK
+API PUT /crewtak/shift-info -> 400 {"error":"Keep the description to 255 characters"}
+API PUT /crewtak/shift-info -> 400 {"error":"Unknown tour or slot"}
+DINNER API: {"tour":"2030-02-01","slot":"dinner.2.note","userId":null,"note":"Chili night","updatedBy":1,"updatedAt":"2026-11-09T05:19:11.943610687Z"} OK | 256 chars rejected: OK | note+user rejected: OK
+API POST /crewtak/aws -> 400 {"error":"Pick a door"}
+API POST /crewtak/aws -> 400 {"error":"End time must be after the start time"}
+API POST /crewtak/aws -> 400 {"error":"An AWS event can be at most 24 hours long"}
+API POST /crewtak/aws -> 400 {"error":"That event ended before this shift started"}
+API DELETE /crewtak/aws/6 -> 404 {"error":"That event is already gone"}
+AWS created: {"running":1,"upcoming":2,"done":3,"overlap":4,"later":5} OK 
+AWS list: delta,bc_east,american,bc_east,allegiant OK
+AWS rejects bad door: OK | end before start: OK | >24h: OK | ended last shift: OK
+AWS delete: OK | delete again 404: OK
+METAR API: {"res":{"station":"KATW","raw":"KATW 090455Z AUTO 29005KT 10SM CLR 05/02 A3002 RMK AO2","tempC":5,"text":"Clear","time":"2026-11-09T04:55:00Z","source":"aviationweather.gov"}} OK
+API PUT /crewtak/shift-info -> 400 {"error":"Unknown tour or slot"}
+SHIFT INFO bad slot rejected: {"error":"Unknown tour or slot"}
+CLEAR OVERDUE before: Early AM Perimeter | Old one-off chore | Crash Phone Test with ATCT | Take out Station Garbages
+shot 18-home-clear-button: http://localhost:2021/home
+CLEAR OVERDUE after: none OK | perimeter next due: 2026-11-09T12:30:00Z | one-off still active: false
+CLEAR OVERDUE perimeter history: status=2 by=1
+shot 08-settings: http://localhost:2021/settings
+shot 08b-crew-settings: http://localhost:2021/settings/circle
+shot 08c-profile: http://localhost:2021/settings/profile
+shot 08d-crew-users: http://localhost:2021/settings/subaccounts
+shot 09-activities: http://localhost:2021/home
+shot 10-hidden-route-points: http://localhost:2021/home
+shot 11-hidden-route-things: http://localhost:2021/home
+shot 11b-training: http://localhost:2021/training
+shot 12-nav: http://localhost:2021/tasks
+shot 19-aws: http://localhost:2021/aws
+AWS in side nav: OK
+AWS form duration: 45m OK
+AWS added through form: OK
+shot 19c-aws-list: http://localhost:2021/aws
+AWS delete button found: 1
+AWS confirm button shown: 1
+AWS deleted through page: OK
+AWS page shows done/later: done=1 later=OK
+shot 13-display-tv: http://localhost:2021/display
+DISPLAY CLOCK: SUN, NOVEMBER 8 23:20|05:20Z OK
+DISPLAY WEATHER: TONIGHT 36° Partly Cloudy TOMORROW 55° / 38° Partly Sunny
+DISPLAY METAR: KATW METAR KATW 090455Z AUTO 29005KT 10SM CLR 05/02 A3002 RMK AO2 Now 41°F · Clear 25 min ago
+DISPLAY WATCH: WATCH · DAY 1 8p – 1130p Smoke Shift 1130p – 3a — 3a – 7a — WATCH · DAY 2 8p – 1130p — 1130p – 3a Smoke Shift 3a – 7a — OK
+DISPLAY LOGO REMOVED: OK
+DISPLAY TASK COLUMNS HIDDEN: OK
+DISPLAY DINNER: DINNER DAY 1 Smoke Shift Tacos, rice and beans DAY 2 — Tap to add what's for dinner OK
+DISPLAY AWS: AWS DAY 1 — DAY 2 Delta 2149–2249 1h BC East 2309–0009 NOW American 0119–0219 1h BC East 0119–0204 45m {"running":"active","upcoming":"upcoming","done":"done"} OK | later tour hidden: OK | not editable: OK
+DISPLAY AWS done struck through: line-through OK
+DISPLAY NO PENCIL: OK
+DISPLAY WEATHER NOT TRUNCATED: OK
+DISPLAY EDIT PHONE: FF2 Smoke Shift | picked: Smoke Shift OK
+DISPLAY EDIT SAVED (after reload): FF2 Smoke Shift | 5184 Fire/EMS Smoke Shift OK
+shot 13d-display-after-edit: http://localhost:2021/display
+DISPLAY EDIT DINNER (after reload): Smoke Shift | Burgers and fries OK
+shot 13f-display-final: http://localhost:2021/display
+shot 14-display-tablet: http://localhost:2021/display
+shot 15-mobile-tasks: http://localhost:2021/tasks
+shot 16-mobile-create: http://localhost:2021/tasks/create
+shot 17-mobile-shift-info: http://localhost:2021/shift
+shot 17b-mobile-aws: http://localhost:2021/aws
+TEXT CHECK 08b-crew-settings.txt: contains circle
+TEXT CHECK report.txt: contains circle
+console errors: 1
+   pageerror: Transition was skipped. New ViewTransition started

@@ -1,0 +1,140 @@
+URL: http://localhost:2021/display
+
+TONIGHT
+
+36°
+
+Partly Cloudy
+
+TOMORROW
+
+55° / 38°
+
+Partly Sunny
+
+SUN, NOVEMBER 8
+
+23:20|05:20Z
+
+C SHIFT · DAY 2
+
+7 Hours and 40 Minutes
+until shift change
+
+KATW METAR
+
+KATW 090455Z AUTO 29005KT 10SM CLR 05/02 A3002 RMK AO2
+
+Now 41°F · Clear
+
+26 min ago
+
+PHONES
+
+Captain
+
+—
+
+FF1
+
+—
+
+FF2
+
+Smoke Shift
+
+Ops
+
+—
+
+WATCH · DAY 1
+
+8p – 1130p
+
+Smoke Shift
+
+1130p – 3a
+
+—
+
+3a – 7a
+
+—
+
+WATCH · DAY 2
+
+8p – 1130p
+
+—
+
+1130p – 3a
+
+Smoke Shift
+
+3a – 7a
+
+—
+
+RIG ASSIGNMENTS
+
+5181 Crash
+
+Smoke Shift
+
+5182 Crash
+
+—
+
+5184 Fire/EMS
+
+Smoke Shift
+
+5132 EMS
+
+—
+
+DINNER
+
+DAY 1
+
+Smoke Shift
+
+Tacos, rice and beans
+
+DAY 2
+
+Smoke Shift
+
+Burgers and fries
+
+AWS
+
+DAY 1
+
+—
+
+DAY 2
+
+Delta
+
+2149–2249
+
+1h
+
+BC East
+
+2309–0009
+
+NOW
+
+American
+
+0119–0219
+
+1h
+
+BC East
+
+0119–0204
+
+45m
