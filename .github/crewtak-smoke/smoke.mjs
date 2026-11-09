@@ -419,6 +419,41 @@ await shot('07e-shift-info-filled', '/shift', { wait: 2500, fullPage: true })
     '| 256 chars rejected:', JSON.stringify(tooLong).includes('255') ? 'OK' : 'FAIL',
     '| note+user rejected:', JSON.stringify(noteWithUser).includes('Unknown') ? 'OK' : 'FAIL')
 }
+// AWS events: create (door + start/end), validation, list, delete.
+const awsIds = {}
+{
+  const now = Date.now()
+  const iso = ms => new Date(ms).toISOString()
+  const add = (door, startMs, endMs) =>
+    api('/crewtak/aws', { method: 'POST', body: JSON.stringify({ door, startAt: iso(startMs), endAt: iso(endMs) }) }, token)
+  const H = 3600 * 1000
+  const M = 60 * 1000
+  awsIds.running = (await add('bc_east', now - 10 * M, now + 50 * M))?.res?.id
+  awsIds.upcoming = (await add('american', now + 2 * H, now + 3 * H))?.res?.id
+  // Earlier this shift (rejected if the shift started less than 90 min ago).
+  awsIds.done = (await add('delta', now - 90 * M, now - 30 * M))?.res?.id
+  awsIds.overlap = (await add('bc_east', now + 2 * H, now + 2 * H + 45 * M))?.res?.id
+  // More than 48 hours out is always a later tour: not on the board yet.
+  awsIds.later = (await add('allegiant', now + 50 * H, now + 51 * H))?.res?.id
+  const toDelete = (await add('salt_room', now + 4 * H, now + 5 * H))?.res?.id
+  const badDoor = await add('front_gate', now + H, now + 2 * H)
+  const backwards = await add('tsa', now + 2 * H, now + H)
+  const tooLong = await add('tsa', now, now + 25 * H)
+  const lastShift = await add('tsa', now - 60 * H, now - 59 * H)
+  const del = await api(`/crewtak/aws/${toDelete}`, { method: 'DELETE' }, token)
+  const delAgain = await api(`/crewtak/aws/${toDelete}`, { method: 'DELETE' }, token)
+  const list = (await api('/crewtak/aws', {}, token))?.res || []
+  const doors = list.map(e => e.door).join(',')
+  const sorted = list.every((e, i) => i === 0 || new Date(list[i - 1].startAt) <= new Date(e.startAt))
+  log('AWS created:', JSON.stringify(awsIds), awsIds.running && awsIds.upcoming && awsIds.overlap && awsIds.later ? 'OK' : 'FAIL',
+    awsIds.done ? '' : '(done-earlier event rejected: shift started <90 min ago)')
+  log('AWS list:', doors, sorted && !doors.includes('salt_room') && doors.includes('allegiant') ? 'OK' : 'FAIL')
+  log('AWS rejects bad door:', JSON.stringify(badDoor).includes('door') ? 'OK' : 'FAIL',
+    '| end before start:', JSON.stringify(backwards).includes('after') ? 'OK' : 'FAIL',
+    '| >24h:', JSON.stringify(tooLong).includes('24') ? 'OK' : 'FAIL',
+    '| ended last shift:', JSON.stringify(lastShift).includes('before this shift') ? 'OK' : 'FAIL')
+  log('AWS delete:', del?.res === toDelete ? 'OK' : 'FAIL', '| delete again 404:', JSON.stringify(delAgain).includes('gone') ? 'OK' : 'FAIL')
+}
 // Server-side METAR.
 {
   const m = await api('/crewtak/weather/metar', {}, token)
@@ -467,6 +502,57 @@ await page.waitForTimeout(2000)
 await page.getByRole('button', { name: /open menu/i }).first().click().catch(() => {})
 await shot('12-nav', null, { wait: 800 })
 
+// AWS page: add an event through the form (door, date, start/end, live
+// duration), then delete it with the two-tap delete.
+{
+  const chi = ms => {
+    const parts = Object.fromEntries(
+      new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+        .formatToParts(new Date(ms)).map(p => [p.type, p.value]),
+    )
+    return { date: `${parts.year}-${parts.month}-${parts.day}`, hhmm: `${parts.hour}${parts.minute}` }
+  }
+  const s0 = chi(Date.now() + 30 * 60000)
+  const e0 = chi(Date.now() + 75 * 60000)
+  try {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await shot('19-aws', '/aws', { wait: 2500 })
+    const navHasAws = await page.getByRole('link', { name: /^AWS$/ }).count()
+    log('AWS in side nav:', navHasAws > 0 ? 'OK' : 'FAIL')
+    await page.getByRole('button', { name: /add aws event/i }).click()
+    await page.waitForTimeout(400)
+    const form = page.getByTestId('aws-add-line')
+    await form.locator('[role=combobox]').first().click()
+    await page.waitForTimeout(300)
+    await page.getByRole('option', { name: 'Basement' }).click()
+    await form.locator('input[type=date]').fill(s0.date)
+    await form.getByPlaceholder('1615').nth(0).fill(s0.hhmm)
+    await form.getByPlaceholder('1615').nth(1).fill(e0.hhmm)
+    await page.waitForTimeout(300)
+    const dur = (await page.getByTestId('aws-duration').innerText()).trim()
+    log('AWS form duration:', dur, dur === '45m' ? 'OK' : 'FAIL')
+    await page.screenshot({ path: `${OUT}/19b-aws-add-line.png` })
+    await page.getByRole('button', { name: /^add event$/i }).click()
+    await page.waitForTimeout(1500)
+    const added = await page.locator('[data-testid^=aws-line-]').filter({ hasText: 'Basement' }).count()
+    log('AWS added through form:', added === 1 ? 'OK' : 'FAIL')
+    await shot('19c-aws-list', null, { wait: 300 })
+    const line = page.locator('[data-testid^=aws-line-]').filter({ hasText: 'Basement' }).first()
+    await line.getByRole('button', { name: /delete basement/i }).click()
+    await page.waitForTimeout(300)
+    await line.getByRole('button', { name: /^delete$/ }).click()
+    await page.waitForTimeout(1500)
+    await page.reload()
+    await page.waitForTimeout(2000)
+    const left = await page.locator('[data-testid^=aws-line-]').filter({ hasText: 'Basement' }).count()
+    log('AWS deleted through page:', left === 0 ? 'OK' : 'FAIL')
+    const struck = await page.locator('[data-testid^=aws-line-][data-status=done]').count()
+    const later = await page.getByText('Later shifts').count()
+    log('AWS page shows done/later:', `done=${struck}`, later ? 'later=OK' : 'later=FAIL')
+  } catch (e) {
+    log('AWS page flow failed:', e.message)
+  }
+}
 // Wall display at TV size
 await page.setViewportSize({ width: 1920, height: 1080 })
 await shot('13-display-tv', '/display', { wait: 6000 })
@@ -486,8 +572,21 @@ await shot('13-display-tv', '/display', { wait: 6000 })
     [...el.querySelectorAll('p, span')].filter(n => n.scrollWidth > n.clientWidth + 1 || n.scrollHeight > n.clientHeight + 1).map(n => n.textContent),
   ).catch(e => [`error: ${e.message}`])
   const boardText = await page.evaluate(() => document.body.innerText)
-  const blank = await page.getByTestId('display-blank').count()
-  log('DISPLAY TASK COLUMNS HIDDEN:', blank === 1 && !/OVERDUE|DUE TODAY|DONE THIS SHIFT/i.test(boardText) ? 'OK' : 'FAIL')
+  log('DISPLAY TASK COLUMNS HIDDEN:', !/OVERDUE|DUE TODAY|DONE THIS SHIFT/i.test(boardText) ? 'OK' : 'FAIL')
+  const dinner = (await page.getByTestId('display-dinner').innerText().catch(() => '')).replace(/\s+/g, ' ')
+  log('DISPLAY DINNER:', dinner, /DAY 1.*Tacos, rice and beans.*DAY 2/i.test(dinner) ? 'OK' : 'FAIL')
+  const aws = (await page.getByTestId('display-aws').innerText().catch(() => '')).replace(/\s+/g, ' ')
+  const statusOf = async id => (id ? await page.getByTestId(`display-aws-${id}`).getAttribute('data-status').catch(() => null) : 'skipped')
+  const st = { running: await statusOf(awsIds.running), upcoming: await statusOf(awsIds.upcoming), done: await statusOf(awsIds.done) }
+  const laterShown = await page.getByTestId(`display-aws-${awsIds.later}`).count()
+  log('DISPLAY AWS:', aws, JSON.stringify(st),
+    st.running === 'active' && st.upcoming === 'upcoming' && (st.done === 'done' || st.done === 'skipped') ? 'OK' : 'FAIL',
+    '| later tour hidden:', laterShown === 0 && !/Allegiant/.test(aws) ? 'OK' : 'FAIL',
+    '| not editable:', (await page.getByTestId('display-aws').locator('[role=button]').count()) === 0 ? 'OK' : 'FAIL')
+  if (awsIds.done) {
+    const deco = await page.getByTestId(`display-aws-${awsIds.done}`).locator('p').first().evaluate(el => getComputedStyle(el).textDecorationLine).catch(() => '')
+    log('DISPLAY AWS done struck through:', deco, deco.includes('line-through') ? 'OK' : 'FAIL')
+  }
   log('DISPLAY NO PENCIL:', (await page.locator('[data-testid=EditRoundedIcon]').count()) === 0 ? 'OK' : 'FAIL')
   log('DISPLAY WEATHER NOT TRUNCATED:', cut.length === 0 ? 'OK' : `FAIL (${cut.join(' | ')})`)
 }
@@ -517,6 +616,29 @@ try {
 } catch (e) {
   log('DISPLAY EDIT flow failed:', e.message)
 }
+// Dinner from the board: Day 2 cooks and description.
+try {
+  await page.getByTestId('display-dinner-2-cooks').click()
+  await page.waitForTimeout(600)
+  await page.locator('[role=dialog] li [role=button]').filter({ hasNotText: /done/i }).first().click()
+  await page.waitForTimeout(600)
+  await page.getByRole('button', { name: /^done$/i }).first().click()
+  await page.waitForTimeout(600)
+  await page.getByTestId('display-dinner-2-note').click()
+  await page.waitForTimeout(600)
+  await page.locator('[role=dialog] input').fill('Burgers and fries')
+  await page.screenshot({ path: `${OUT}/13e-display-dinner-note.png` })
+  await page.getByRole('button', { name: /^save$/i }).click()
+  await page.waitForTimeout(1500)
+  await page.reload()
+  await page.waitForTimeout(4000)
+  const cooks2 = (await page.getByTestId('display-dinner-2-cooks').innerText().catch(() => '')).trim()
+  const note2 = (await page.getByTestId('display-dinner-2-note').innerText().catch(() => '')).trim()
+  log('DISPLAY EDIT DINNER (after reload):', cooks2, '|', note2, cooks2 !== '—' && note2 === 'Burgers and fries' ? 'OK' : 'FAIL')
+  await shot('13f-display-final', null, { wait: 500 })
+} catch (e) {
+  log('DISPLAY DINNER flow failed:', e.message)
+}
 await page.setViewportSize({ width: 820, height: 1180 })
 await shot('14-display-tablet', '/display', { wait: 3000 })
 // Mobile
@@ -524,6 +646,7 @@ await page.setViewportSize({ width: 390, height: 844 })
 await shot('15-mobile-tasks', '/tasks')
 await shot('16-mobile-create', '/tasks/create', { fullPage: true })
 await shot('17-mobile-shift-info', '/shift', { wait: 2500 })
+await shot('17b-mobile-aws', '/aws', { wait: 2500 })
 
 // Words that should not appear anywhere now.
 const forbidden = ['Sub Account', 'Sub account', 'Primary Account', 'Managed Accounts', 'Recent Activities', 'Send nudge', 'Circle', 'circle', 'NFC', 'Privacy Policy', 'Terms of', 'Priority', 'Labels', 'Points', 'Notifications', 'Require approval', 'Things', 'Adaptive', 'Yearly', 'Donetick', 'Attachment', 'Privacy settings', 'Scheduling']

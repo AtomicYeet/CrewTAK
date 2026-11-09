@@ -72,7 +72,8 @@ func Migration(db *gorm.DB) error {
 		rwModel.RewardRedemption{},
 		bridgeModel.Settings{},
 		calModel.CalendarToken{},
-		shiftinfo.Slot{}, // CrewTAK
+		shiftinfo.Slot{},     // CrewTAK
+		shiftinfo.AWSEvent{}, // CrewTAK
 	); err != nil {
 		return err
 	}

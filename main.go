@@ -241,6 +241,7 @@ func main() {
 			thing.APIs,
 			label.Routes,
 			shiftinfo.Routes,
+			shiftinfo.AWSRoutes,
 			shiftinfo.StartPhoneSwaps,
 			crewweather.Routes,
 			reward.Routes,
