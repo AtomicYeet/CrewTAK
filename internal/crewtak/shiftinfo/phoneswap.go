@@ -16,8 +16,14 @@ package shiftinfo
 // Each hand-off happens once per watch block. A marker row
 // (swap.<day>.<block>, never sent to the page) records it, so if someone
 // changes phones by hand during the watch it is left alone. If the watch is
-// filled in partway through the block, the hand-off happens then. Shift change
-// at 07:00 still starts a new tour with every slot empty.
+// filled in partway through the block, the hand-off happens then.
+//
+// The crew officer (the "officer" slot, one person per tour) takes the
+// Captain's phone back at 07:00 on Day 2, when the last Day 1 watch ends,
+// swapping with whoever had it the same way. If no officer is set yet, it
+// happens as soon as one is picked during Day 2's daytime (until the 20:00
+// watch takes over). Shift change at 07:00 after Day 2 still starts a new tour
+// with every slot empty, so there is no hand-off then.
 
 import (
 	"context"
@@ -36,6 +42,7 @@ const (
 	shiftHours     = 48
 	shiftChangeHr  = 7
 	captainSlot    = "phone.captain"
+	officerSlot    = "officer"
 	swapPrefix     = "swap."
 	swapCheckEvery = 30 * time.Second
 )
@@ -116,12 +123,27 @@ func sameUser(a, b *int) bool {
 	return a != nil && b != nil && *a == *b
 }
 
-// swapCrew does the hand-off for one crew if it is due. Returns true when it
-// changed the phones.
-func swapCrew(tx *gorm.DB, circleID int, tour string, shiftDay, block int, now time.Time) (bool, error) {
-	marker := fmt.Sprintf("%s%d.%d", swapPrefix, shiftDay, block)
-	watchSlot := fmt.Sprintf("sleep.%d.%d", shiftDay, block)
+// dueHandOff returns the Captain's phone hand-off due at station-local time
+// t: takerSlot holds the person who should get the phone, and marker records
+// that it was done. ok is false when none is due (Day 1, 07:00–20:00).
+func dueHandOff(t time.Time) (tour, takerSlot, marker string, ok bool) {
+	tour, shiftDay, block := currentWatch(t)
+	switch {
+	case block >= 0:
+		return tour,
+			fmt.Sprintf("sleep.%d.%d", shiftDay, block),
+			fmt.Sprintf("%s%d.%d", swapPrefix, shiftDay, block),
+			true
+	case shiftDay == 2:
+		// Day 2 daytime: the last Day 1 watch is over, the officer takes over.
+		return tour, officerSlot, swapPrefix + "2.officer", true
+	}
+	return tour, "", "", false
+}
 
+// swapCrew does the hand-off for one crew if it is due: whoever is in
+// takerSlot gets the Captain's phone. Returns true when it changed the phones.
+func swapCrew(tx *gorm.DB, circleID int, tour, takerSlot, marker string, now time.Time) (bool, error) {
 	var rows []Slot
 	if err := tx.Where("circle_id = ? AND tour = ?", circleID, tour).Find(&rows).Error; err != nil {
 		return false, err
@@ -133,9 +155,9 @@ func swapCrew(tx *gorm.DB, circleID int, tour string, shiftDay, block int, now t
 	if _, done := slots[marker]; done {
 		return false, nil
 	}
-	awake := slotUser(slots, watchSlot)
+	awake := slotUser(slots, takerSlot)
 	if awake == nil {
-		return false, nil // nobody on this watch (yet)
+		return false, nil // nobody on this watch / no officer (yet)
 	}
 
 	captain := slotUser(slots, captainSlot)
@@ -170,23 +192,22 @@ func upsertSlot(tx *gorm.DB, circleID int, tour, slot string, userID *int, now t
 }
 
 // RunPhoneSwaps hands the Captain's phone over for every crew whose watch
-// change is due at station-local time now.
+// change (or the officer's Day 2 take-back) is due at station-local time now.
 func RunPhoneSwaps(db *gorm.DB, now time.Time) (int, error) {
-	tour, shiftDay, block := currentWatch(now)
-	if block < 0 {
+	tour, takerSlot, marker, ok := dueHandOff(now)
+	if !ok {
 		return 0, nil
 	}
-	watchSlot := fmt.Sprintf("sleep.%d.%d", shiftDay, block)
 	var circles []int
 	if err := db.Model(&Slot{}).
-		Where("tour = ? AND slot = ? AND user_id IS NOT NULL", tour, watchSlot).
+		Where("tour = ? AND slot = ? AND user_id IS NOT NULL", tour, takerSlot).
 		Distinct().Pluck("circle_id", &circles).Error; err != nil {
 		return 0, err
 	}
 	swapped := 0
 	for _, circleID := range circles {
 		err := db.Transaction(func(tx *gorm.DB) error {
-			changed, err := swapCrew(tx, circleID, tour, shiftDay, block, now.UTC())
+			changed, err := swapCrew(tx, circleID, tour, takerSlot, marker, now.UTC())
 			if changed {
 				swapped++
 			}

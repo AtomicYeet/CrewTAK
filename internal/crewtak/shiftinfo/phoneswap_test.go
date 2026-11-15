@@ -147,3 +147,62 @@ func TestPhoneSwapAlreadyCaptain(t *testing.T) {
 		t.Fatalf("got %v", p)
 	}
 }
+
+func TestOfficerTakesCaptainOnDay2(t *testing.T) {
+	db := testDB(t)
+	tour := "2026-10-16"
+	put(t, db, tour, "officer", steven)
+	put(t, db, tour, "phone.captain", alex) // Alex had the 3a–7a watch
+	put(t, db, tour, "phone.ff1", steven)
+	put(t, db, tour, "phone.ff2", michael)
+
+	// Day 1 daytime: the officer is set but nothing happens yet.
+	if n, err := RunPhoneSwaps(db, chicago(t, 2026, 10, 16, 15, 0)); err != nil || n != 0 {
+		t.Fatalf("day 1 run: n=%d err=%v", n, err)
+	}
+	// 06:59 is still the last Day 1 watch (nobody on it here).
+	if n, _ := RunPhoneSwaps(db, chicago(t, 2026, 10, 17, 6, 59)); n != 0 {
+		t.Fatalf("06:59 run swapped")
+	}
+	if p := phones(t, db, tour); p["phone.captain"] != alex {
+		t.Fatalf("captain moved early: %v", p)
+	}
+
+	// 07:00 Day 2: Steven takes Captain's back, Alex gets FF1.
+	if n, err := RunPhoneSwaps(db, chicago(t, 2026, 10, 17, 7, 0)); err != nil || n != 1 {
+		t.Fatalf("officer run: n=%d err=%v", n, err)
+	}
+	p := phones(t, db, tour)
+	if p["phone.captain"] != steven || p["phone.ff1"] != alex || p["phone.ff2"] != michael {
+		t.Fatalf("after officer swap: %v", p)
+	}
+
+	// A manual change later in the day is left alone.
+	put(t, db, tour, "phone.captain", michael)
+	if n, _ := RunPhoneSwaps(db, chicago(t, 2026, 10, 17, 12, 0)); n != 0 {
+		t.Fatalf("officer swapped twice")
+	}
+
+	// Shift change after Day 2 is a new tour: no hand-off.
+	if n, err := RunPhoneSwaps(db, chicago(t, 2026, 10, 18, 7, 0)); err != nil || n != 0 {
+		t.Fatalf("next tour run: n=%d err=%v", n, err)
+	}
+}
+
+func TestOfficerPickedDuringDay2(t *testing.T) {
+	db := testDB(t)
+	tour := "2026-10-16"
+	put(t, db, tour, "phone.captain", alex)
+	// No officer at 07:00: nothing to do.
+	if n, err := RunPhoneSwaps(db, chicago(t, 2026, 10, 17, 7, 0)); err != nil || n != 0 {
+		t.Fatalf("n=%d err=%v", n, err)
+	}
+	// Officer picked mid-morning takes Captain's then.
+	put(t, db, tour, "officer", steven)
+	if n, err := RunPhoneSwaps(db, chicago(t, 2026, 10, 17, 9, 30)); err != nil || n != 1 {
+		t.Fatalf("n=%d err=%v", n, err)
+	}
+	if p := phones(t, db, tour); p["phone.captain"] != steven || len(p) != 1 {
+		t.Fatalf("got %v", p)
+	}
+}

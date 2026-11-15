@@ -19,6 +19,9 @@
 // At each watch change the person coming on watch takes the Captain's phone
 // and hands theirs to the previous holder; see phoneswap.go.
 //
+// The crew officer ("officer") is one person for the whole tour. They take the
+// Captain's phone back at 07:00 on Day 2 (also in phoneswap.go).
+//
 // Dinner plans work the same way per shift day: dinner.<day>.u<userId> for
 // each person cooking, plus dinner.<day>.note holding a short description
 // (up to 255 characters) of what dinner will be.
@@ -57,6 +60,7 @@ var validSlots = map[string]bool{
 	"phone.ff1":     true,
 	"phone.ff2":     true,
 	"phone.ops":     true,
+	"officer":       true,
 	"sleep.1.0":     true,
 	"sleep.1.1":     true,
 	"sleep.1.2":     true,
