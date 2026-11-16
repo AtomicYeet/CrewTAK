@@ -129,9 +129,16 @@ log('login ok:', Boolean(token))
   log('CREW ROLE MEMBER CANNOT SET:', memberCannotRole === 403 ? 'OK' : `FAIL (${memberCannotRole})`)
 
   // Crew codes / join requests and impersonation are gone (15 Nov 2026).
-  const join = await rawStatus('/circles/join?invite_code=abc', { method: 'POST' }, shiftToken)
-  const requests = await rawStatus('/circles/members/requests', {}, token)
-  log('CREW JOIN REMOVED:', join === 404 && requests === 404 ? 'OK' : `FAIL (join ${join}, requests ${requests})`)
+  // Unknown paths fall through to the web app's index.html, so "gone" means
+  // the answer is not the API's JSON.
+  const isApi = async (path, opts, tok) => {
+    const res = await fetch(`${BASE}/api/v1${path}`, { ...opts, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` } })
+    return (res.headers.get('content-type') || '').includes('application/json')
+  }
+  const joinApi = await isApi('/circles/join?invite_code=abc', { method: 'POST' }, shiftToken)
+  const requestsApi = await isApi('/circles/members/requests', {}, token)
+  const membersApi = await isApi('/circles/members', {}, token)
+  log('CREW JOIN REMOVED:', !joinApi && !requestsApi && membersApi ? 'OK' : `FAIL (join ${joinApi}, requests ${requestsApi}, members ${membersApi})`)
   const impersonated = await fetch(`${BASE}/api/v1/users/profile`, { headers: { Authorization: `Bearer ${token}`, 'X-Impersonate-User-ID': String(madeR?.res?.id) } }).then(r => r.json()).catch(() => ({}))
   const viaChores = await fetch(`${BASE}/api/v1/chores/`, { headers: { Authorization: `Bearer ${shiftToken}`, 'X-Impersonate-User-ID': String(made?.res?.id) } }).then(r => r.status).catch(() => 0)
   log('IMPERSONATION IGNORED:', impersonated?.res?.username === USER.username && viaChores === 200 ? 'OK' : `FAIL (${impersonated?.res?.username} ${viaChores})`)
