@@ -111,6 +111,30 @@ log('login ok:', Boolean(token))
   await api('/users/subaccounts/shift', { method: 'PUT', body: JSON.stringify({ userId: madeC?.res?.id, crewShift: 'B' }) }, token)
   const memberCannotSet = await rawStatus('/users/subaccounts/shift', { method: 'PUT', body: JSON.stringify({ userId: madeC?.res?.id, crewShift: 'A' }) }, (await api('/auth/login', { method: 'POST', body: JSON.stringify({ username: 'smokeshift', password: 'shift-pass-1' }) })).access_token)
   log('CREW SHIFT MEMBER CANNOT SET:', memberCannotSet === 403 ? 'OK' : `FAIL (${memberCannotSet})`)
+
+  // Crew role (Crew / Manager / Admin) set on Crew Users (added 15 Nov 2026).
+  const madeR = await api('/users/subaccounts', { method: 'POST', body: JSON.stringify({ childName: 'smokerole', displayName: 'Smoke Role', password: 'role-pass-1', role: 'manager' }) }, token)
+  const roleMember = ((await api('/circles/members', {}, token))?.res || []).find(m => m.userId === madeR?.res?.id)
+  log('CREW ROLE ON CREATE:', madeR?.res?.role === 'manager' && roleMember?.role === 'manager' ? 'OK' : `FAIL (${madeR?.res?.role} ${roleMember?.role})`)
+  const badCreate = await rawStatus('/users/subaccounts', { method: 'POST', body: JSON.stringify({ childName: 'smokebadrole', password: 'role-pass-1', role: 'owner' }) }, token)
+  log('CREW ROLE BAD ON CREATE REJECTED:', badCreate === 400 ? 'OK' : `FAIL (${badCreate})`)
+  const setRole = await rawStatus('/users/subaccounts/role', { method: 'PUT', body: JSON.stringify({ userId: madeR?.res?.id, role: 'admin' }) }, token)
+  const listedRole = ((await api('/users/subaccounts', {}, token))?.res || []).find(u => u.id === madeR?.res?.id)
+  const badRole = await rawStatus('/users/subaccounts/role', { method: 'PUT', body: JSON.stringify({ userId: madeR?.res?.id, role: 'owner' }) }, token)
+  log('CREW ROLE SET:', setRole === 200 && listedRole?.role === 'admin' ? 'OK' : `FAIL (${setRole} ${listedRole?.role})`,
+    '| bad value rejected:', badRole === 400 ? 'OK' : `FAIL (${badRole})`)
+  await api('/users/subaccounts/role', { method: 'PUT', body: JSON.stringify({ userId: madeR?.res?.id, role: 'member' }) }, token)
+  const shiftToken = (await api('/auth/login', { method: 'POST', body: JSON.stringify({ username: 'smokeshift', password: 'shift-pass-1' }) })).access_token
+  const memberCannotRole = await rawStatus('/users/subaccounts/role', { method: 'PUT', body: JSON.stringify({ userId: madeR?.res?.id, role: 'admin' }) }, shiftToken)
+  log('CREW ROLE MEMBER CANNOT SET:', memberCannotRole === 403 ? 'OK' : `FAIL (${memberCannotRole})`)
+
+  // Crew codes / join requests and impersonation are gone (15 Nov 2026).
+  const join = await rawStatus('/circles/join?invite_code=abc', { method: 'POST' }, shiftToken)
+  const requests = await rawStatus('/circles/members/requests', {}, token)
+  log('CREW JOIN REMOVED:', join === 404 && requests === 404 ? 'OK' : `FAIL (join ${join}, requests ${requests})`)
+  const impersonated = await fetch(`${BASE}/api/v1/users/profile`, { headers: { Authorization: `Bearer ${token}`, 'X-Impersonate-User-ID': String(madeR?.res?.id) } }).then(r => r.json()).catch(() => ({}))
+  const viaChores = await fetch(`${BASE}/api/v1/chores/`, { headers: { Authorization: `Bearer ${shiftToken}`, 'X-Impersonate-User-ID': String(made?.res?.id) } }).then(r => r.status).catch(() => 0)
+  log('IMPERSONATION IGNORED:', impersonated?.res?.username === USER.username && viaChores === 200 ? 'OK' : `FAIL (${impersonated?.res?.username} ${viaChores})`)
 }
 
 const chore = (name, frequencyType, nextDueDate, extra = {}) =>
@@ -489,9 +513,21 @@ log('SHIFT INFO bad slot rejected:', JSON.stringify(badSlot).slice(0, 80))
   }
 }
 await shot('08-settings', '/settings', { fullPage: true })
-await shot('08b-crew-settings', '/settings/circle', { fullPage: true })
+// Crew Settings was merged into Crew Users; the old address forwards there.
+await shot('08b-crew-settings-redirect', '/settings/circle')
+log('CREW SETTINGS REDIRECT:', page.url().endsWith('/settings/subaccounts') ? 'OK' : `FAIL (${page.url()})`)
 await shot('08c-profile', '/settings/profile', { fullPage: true })
 await shot('08d-crew-users', '/settings/subaccounts', { fullPage: true })
+await shot('08e-crew-users-add', null, {
+  before: async () => {
+    await page.getByRole('button', { name: /^add user$/i }).first().click()
+    await page.waitForTimeout(800)
+    await page.getByRole('combobox', { name: 'Role' }).click()
+    await page.waitForTimeout(500)
+  },
+})
+await page.keyboard.press('Escape').catch(() => {})
+await page.keyboard.press('Escape').catch(() => {})
 await shot('09-activities', '/activities', { fullPage: true })
 await shot('10-hidden-route-points', '/points')
 await shot('11-hidden-route-things', '/things')

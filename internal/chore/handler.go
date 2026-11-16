@@ -4527,7 +4527,6 @@ func Routes(router *gin.Engine, h *Handler, multiAuthMiddleware *auth.MultiAuthM
 
 	choresRoutes := router.Group("api/v1/chores")
 	choresRoutes.Use(multiAuthMiddleware.MiddlewareFunc())
-	choresRoutes.Use(auth.ImpersonationMiddleware(h.uRepo, h.circleRepo))
 	{
 		choresRoutes.GET("/", h.GetChores)
 		choresRoutes.GET("/archived", h.GetArchivedChores)

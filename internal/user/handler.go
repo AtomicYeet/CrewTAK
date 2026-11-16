@@ -1477,6 +1477,24 @@ type CreateChildUserRequest struct {
 	DisplayName string `json:"displayName"`
 	Password    string `json:"password" binding:"required,min=8,max=64"`
 	CrewShift   string `json:"crewShift"`
+	// Role in the crew: member (default), manager or admin.
+	Role string `json:"role"`
+}
+
+// UpdateCrewRoleRequest sets someone's crew role (member, manager, admin).
+type UpdateCrewRoleRequest struct {
+	UserID int    `json:"userId" binding:"required"`
+	Role   string `json:"role" binding:"required"`
+}
+
+// normalizeCrewRole maps the role sent by the Crew Users page to a crew
+// role. Empty means member.
+func normalizeCrewRole(role string) (cModel.Role, bool) {
+	r := cModel.Role(strings.ToLower(strings.TrimSpace(role)))
+	if r == "" {
+		return cModel.RoleMember, true
+	}
+	return r, cModel.IsValidRole(r)
 }
 
 // UpdateCrewShiftRequest sets which crew group a user is in.
@@ -1498,6 +1516,7 @@ type ChildUserResponse struct {
 	DisplayName string `json:"displayName"`
 	UserType    string `json:"userType"`
 	CrewShift   string `json:"crewShift"`
+	Role        string `json:"role"`
 	CreatedAt   string `json:"createdAt"`
 }
 
@@ -1578,6 +1597,11 @@ func (h *Handler) createChildUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Shift must be A, B, C, Ops or Chief"})
 		return
 	}
+	role, okRole := normalizeCrewRole(req.Role)
+	if !okRole {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Role must be crew, manager or admin"})
+		return
+	}
 
 	encodedPassword, err := auth.EncodePassword(req.Password)
 	if err != nil {
@@ -1612,7 +1636,7 @@ func (h *Handler) createChildUser(c *gin.Context) {
 	if err := h.circleRepo.AddUserToCircle(c, &cModel.UserCircle{
 		UserID:    createdUser.ID,
 		CircleID:  manager.CircleID,
-		Role:      "member", // promote from Crew settings if needed
+		Role:      cModel.UserRole(role),
 		IsActive:  true,
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
@@ -1627,6 +1651,7 @@ func (h *Handler) createChildUser(c *gin.Context) {
 		DisplayName: createdUser.DisplayName,
 		UserType:    "child",
 		CrewShift:   createdUser.CrewShift,
+		Role:        string(role),
 		CreatedAt:   createdUser.CreatedAt.Format(time.RFC3339),
 	}})
 }
@@ -1692,6 +1717,42 @@ func (h *Handler) updateCrewShift(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"res": gin.H{"userId": req.UserID, "crewShift": shift}})
 }
 
+// updateCrewRole sets a crew login's role: member (shown as "Crew"),
+// manager or admin. Crew admins only, same as the other Crew Users actions.
+// The original account owner isn't a crew login, so it can't be changed.
+func (h *Handler) updateCrewRole(c *gin.Context) {
+	manager, ok := h.crewManager(c)
+	if !ok {
+		return
+	}
+
+	var req UpdateCrewRoleRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	role, valid := normalizeCrewRole(req.Role)
+	if !valid {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Role must be crew, manager or admin"})
+		return
+	}
+	if req.UserID == manager.ID {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "You can't change your own role"})
+		return
+	}
+
+	if _, ok := h.managedCrewUser(c, manager, req.UserID); !ok {
+		return
+	}
+
+	if err := h.circleRepo.ChangeUserRole(c.Request.Context(), manager.CircleID, req.UserID, role); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update role"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"res": gin.H{"userId": req.UserID, "role": string(role)}})
+}
+
 func (h *Handler) deleteChildUser(c *gin.Context) {
 	manager, ok := h.crewManager(c)
 	if !ok {
@@ -1737,14 +1798,27 @@ func (h *Handler) getChildUsers(c *gin.Context) {
 		return
 	}
 
+	// Each user's crew role, shown and changed on the Crew Users page.
+	roles := map[int]string{}
+	if members, err := h.circleRepo.GetCircleUsers(c, manager.CircleID); err == nil {
+		for _, m := range members {
+			roles[m.UserID] = string(m.Role)
+		}
+	}
+
 	response := []ChildUserResponse{}
 	for _, child := range childUsers {
+		role := roles[child.ID]
+		if role == "" {
+			role = string(cModel.RoleMember)
+		}
 		response = append(response, ChildUserResponse{
 			ID:          child.ID,
 			Username:    child.Username,
 			DisplayName: child.DisplayName,
 			UserType:    "child",
 			CrewShift:   child.CrewShift,
+			Role:        role,
 			CreatedAt:   child.CreatedAt.Format(time.RFC3339),
 		})
 	}
@@ -1855,6 +1929,7 @@ func Routes(router *gin.Engine, h *Handler, jwtAuth *jwt.GinJWTMiddleware, multi
 		userRoutes.GET("/subaccounts", h.getChildUsers)
 		userRoutes.PUT("/subaccounts/password", h.updateChildPassword)
 		userRoutes.PUT("/subaccounts/shift", h.updateCrewShift)
+		userRoutes.PUT("/subaccounts/role", h.updateCrewRole)
 		userRoutes.DELETE("/subaccounts/:id", h.deleteChildUser)
 	}
 

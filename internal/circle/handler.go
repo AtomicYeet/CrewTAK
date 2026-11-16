@@ -1109,17 +1109,12 @@ func Routes(router *gin.Engine, h *Handler, multiAuthMiddleware *auth.MultiAuthM
 	circleRoutes.Use(multiAuthMiddleware.MiddlewareFunc())
 	{
 		circleRoutes.GET("/members", h.GetCircleMembers)
-		circleRoutes.GET("/members/requests", h.GetPendingCircleMembers)
 		circleRoutes.PUT("/members/role", h.ChangeMemberRole)
 		circleRoutes.GET("/", h.GetUserCircles)
 		circleRoutes.POST("/:id/members/points/redeem", h.RedeemPoints)
 
-		if !h.singleCircleInstance {
-			circleRoutes.PUT("/members/requests/accept", h.AcceptJoinRequest)
-			circleRoutes.DELETE("/members/requests/decline", h.DeclineJoinRequest)
-			circleRoutes.POST("/join", h.JoinCircle)
-			circleRoutes.DELETE("/leave", h.LeaveCircle)
-			circleRoutes.DELETE("/:id/members/delete", h.DeleteCircleMember)
-		}
+		// CrewTAK: one station, users are added by crew admins from
+		// Settings → Crew Users. No crew codes, join requests or leaving a
+		// crew (removed 15 Nov 2026), so those routes are not registered.
 	}
 }

@@ -128,7 +128,6 @@ func (h *Handler) ClearOverdue(c *gin.Context) {
 func CrewtakRoutes(router *gin.Engine, h *Handler, multiAuthMiddleware *auth.MultiAuthMiddleware) {
 	g := router.Group("api/v1/crewtak/chores")
 	g.Use(multiAuthMiddleware.MiddlewareFunc())
-	g.Use(auth.ImpersonationMiddleware(h.uRepo, h.circleRepo))
 	{
 		g.POST("/clear-overdue", h.ClearOverdue)
 	}

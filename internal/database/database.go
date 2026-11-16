@@ -73,12 +73,16 @@ func NewDatabase(cfg *config.Config) (*gorm.DB, error) {
 		if path == "" {
 			path = "donetick.db"
 		}
-		db, err = gorm.Open(sqlite.Open(path), &gormConfig)
+		db, err = gorm.Open(sqlite.Open(sqliteDSN(path)), &gormConfig)
 
 	}
 
 	if err != nil {
 		return nil, err
+	}
+
+	if cfg.Database.Type != "postgres" {
+		hardenSQLite(db)
 	}
 
 	// Add OpenTelemetry tracing to GORM
