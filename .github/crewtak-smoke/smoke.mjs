@@ -128,6 +128,26 @@ log('login ok:', Boolean(token))
   const memberCannotRole = await rawStatus('/users/subaccounts/role', { method: 'PUT', body: JSON.stringify({ userId: madeR?.res?.id, role: 'admin' }) }, shiftToken)
   log('CREW ROLE MEMBER CANNOT SET:', memberCannotRole === 403 ? 'OK' : `FAIL (${memberCannotRole})`)
 
+  // Optional email on each crew login (added 21 Nov 2026): set on create or
+  // from Crew Users, lowercased, unique, empty clears it.
+  const madeE = await api('/users/subaccounts', { method: 'POST', body: JSON.stringify({ childName: 'smokeemail', password: 'email-pass-1', email: ' Smoke.Email@Example.com ' }) }, token)
+  log('CREW EMAIL ON CREATE:', madeE?.res?.email === 'smoke.email@example.com' ? 'OK' : `FAIL (${JSON.stringify(madeE?.res)})`)
+  const noEmail = await api('/users/subaccounts', { method: 'POST', body: JSON.stringify({ childName: 'smokenoemail', password: 'email-pass-1' }) }, token)
+  log('CREW EMAIL OPTIONAL:', noEmail?.res?.username === 'smokenoemail' && !noEmail?.res?.email ? 'OK' : `FAIL (${JSON.stringify(noEmail?.res)})`)
+  const badEmail = await rawStatus('/users/subaccounts/email', { method: 'PUT', body: JSON.stringify({ userId: noEmail?.res?.id, email: 'not-an-email' }) }, token)
+  const dupeEmail = await rawStatus('/users/subaccounts/email', { method: 'PUT', body: JSON.stringify({ userId: noEmail?.res?.id, email: 'SMOKE.EMAIL@example.com' }) }, token)
+  const dupeOwner = await rawStatus('/users/subaccounts/email', { method: 'PUT', body: JSON.stringify({ userId: noEmail?.res?.id, email: USER.email }) }, token)
+  const setEmail = await rawStatus('/users/subaccounts/email', { method: 'PUT', body: JSON.stringify({ userId: noEmail?.res?.id, email: 'no.email@example.com' }) }, token)
+  const listedEmail = ((await api('/users/subaccounts', {}, token))?.res || []).find(u => u.id === noEmail?.res?.id)
+  log('CREW EMAIL SET:', setEmail === 200 && listedEmail?.email === 'no.email@example.com' ? 'OK' : `FAIL (${setEmail} ${listedEmail?.email})`,
+    '| bad rejected:', badEmail === 400 ? 'OK' : `FAIL (${badEmail})`,
+    '| duplicate rejected:', dupeEmail === 409 && dupeOwner === 409 ? 'OK' : `FAIL (${dupeEmail} ${dupeOwner})`)
+  const clearEmail = await rawStatus('/users/subaccounts/email', { method: 'PUT', body: JSON.stringify({ userId: noEmail?.res?.id, email: '' }) }, token)
+  const clearedEmail = ((await api('/users/subaccounts', {}, token))?.res || []).find(u => u.id === noEmail?.res?.id)
+  log('CREW EMAIL CLEAR:', clearEmail === 200 && !clearedEmail?.email ? 'OK' : `FAIL (${clearEmail} ${clearedEmail?.email})`)
+  const memberCannotEmail = await rawStatus('/users/subaccounts/email', { method: 'PUT', body: JSON.stringify({ userId: madeE?.res?.id, email: 'x@example.com' }) }, shiftToken)
+  log('CREW EMAIL MEMBER CANNOT SET:', memberCannotEmail === 403 ? 'OK' : `FAIL (${memberCannotEmail})`)
+
   // Crew codes / join requests and impersonation are gone (15 Nov 2026).
   // Unknown paths fall through to the web app's index.html, so "gone" means
   // the answer is not the API's JSON.
@@ -539,6 +559,14 @@ await shot('09-activities', '/activities', { fullPage: true })
 await shot('10-hidden-route-points', '/points')
 await shot('11-hidden-route-things', '/things')
 await shot('11b-training', '/training')
+// Work-in-progress modules (added 21 Nov 2026).
+await shot('11c-schedule', '/schedule')
+await shot('11d-live-map', '/map')
+await shot('11e-extinguishers', '/extinguishers')
+for (const name of ['Schedule', 'Live Map', 'Fire Extinguishers']) {
+  const inNav = await page.getByRole('link', { name: new RegExp(`^${name}$`) }).count()
+  log(`${name} in side nav:`, inNav > 0 ? 'OK' : 'FAIL')
+}
 // Nav drawer
 await page.goto(`${BASE}/tasks`)
 await page.waitForTimeout(2000)

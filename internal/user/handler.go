@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"html"
 	"net/http"
+	"net/mail"
 	"path/filepath"
 	"strings"
 	"time"
@@ -887,6 +888,8 @@ func (h *Handler) resetPassword(c *gin.Context) {
 		return
 	}
 
+	// CrewTAK: lookups ignore case, so use the address as stored.
+	req.Email = user.Email
 	err = h.userRepo.SetPasswordResetToken(c, req.Email, token)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -1479,6 +1482,8 @@ type CreateChildUserRequest struct {
 	CrewShift   string `json:"crewShift"`
 	// Role in the crew: member (default), manager or admin.
 	Role string `json:"role"`
+	// Optional email, for future notifications and password resets.
+	Email string `json:"email"`
 }
 
 // UpdateCrewRoleRequest sets someone's crew role (member, manager, admin).
@@ -1503,6 +1508,39 @@ type UpdateCrewShiftRequest struct {
 	CrewShift string `json:"crewShift"`
 }
 
+// UpdateCrewEmailRequest sets (or, when empty, clears) a crew login's email.
+type UpdateCrewEmailRequest struct {
+	UserID int    `json:"userId" binding:"required"`
+	Email  string `json:"email"`
+}
+
+// normalizeCrewEmail trims and lowercases an email typed on the Crew Users
+// page. Empty is allowed (email is optional); anything else must look like a
+// single plain address.
+func normalizeCrewEmail(email string) (string, bool) {
+	e := strings.ToLower(strings.TrimSpace(email))
+	if e == "" {
+		return "", true
+	}
+	if len(e) > 254 {
+		return "", false
+	}
+	addr, err := mail.ParseAddress(e)
+	if err != nil || addr.Address != e || addr.Name != "" {
+		return "", false
+	}
+	return e, true
+}
+
+// emailTakenByOther reports whether another account already uses email.
+func (h *Handler) emailTakenByOther(c *gin.Context, email string, userID int) bool {
+	if email == "" {
+		return false
+	}
+	existing, err := h.userRepo.FindByEmail(c, email)
+	return err == nil && existing != nil && existing.ID != userID
+}
+
 // UpdateChildPasswordRequest represents the request to update a child user's password
 type UpdateChildPasswordRequest struct {
 	ChildUserID int    `json:"childUserId" binding:"required"`
@@ -1517,6 +1555,7 @@ type ChildUserResponse struct {
 	UserType    string `json:"userType"`
 	CrewShift   string `json:"crewShift"`
 	Role        string `json:"role"`
+	Email       string `json:"email"`
 	CreatedAt   string `json:"createdAt"`
 }
 
@@ -1602,6 +1641,15 @@ func (h *Handler) createChildUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Role must be crew, manager or admin"})
 		return
 	}
+	email, okEmail := normalizeCrewEmail(req.Email)
+	if !okEmail {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "That doesn't look like a valid email address"})
+		return
+	}
+	if h.emailTakenByOther(c, email, 0) {
+		c.JSON(http.StatusConflict, gin.H{"error": "That email is already used by another account"})
+		return
+	}
 
 	encodedPassword, err := auth.EncodePassword(req.Password)
 	if err != nil {
@@ -1618,6 +1666,7 @@ func (h *Handler) createChildUser(c *gin.Context) {
 		UserType:     uModel.UserTypeChild,
 		Provider:     uModel.AuthProviderDonetick,
 		CrewShift:    crewShift,
+		Email:        email,
 		CreatedAt:    time.Now().UTC(),
 		UpdatedAt:    time.Now().UTC(),
 	}
@@ -1652,6 +1701,7 @@ func (h *Handler) createChildUser(c *gin.Context) {
 		UserType:    "child",
 		CrewShift:   createdUser.CrewShift,
 		Role:        string(role),
+		Email:       createdUser.Email,
 		CreatedAt:   createdUser.CreatedAt.Format(time.RFC3339),
 	}})
 }
@@ -1715,6 +1765,42 @@ func (h *Handler) updateCrewShift(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"res": gin.H{"userId": req.UserID, "crewShift": shift}})
+}
+
+// updateCrewEmail sets or clears a crew login's email (optional; used later
+// for notifications and password resets). Crew admins only, same as the
+// other Crew Users actions. Emails are unique across accounts.
+func (h *Handler) updateCrewEmail(c *gin.Context) {
+	manager, ok := h.crewManager(c)
+	if !ok {
+		return
+	}
+
+	var req UpdateCrewEmailRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	email, valid := normalizeCrewEmail(req.Email)
+	if !valid {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "That doesn't look like a valid email address"})
+		return
+	}
+
+	if _, ok := h.managedCrewUser(c, manager, req.UserID); !ok {
+		return
+	}
+	if h.emailTakenByOther(c, email, req.UserID) {
+		c.JSON(http.StatusConflict, gin.H{"error": "That email is already used by another account"})
+		return
+	}
+
+	if err := h.userRepo.UpdateEmail(c.Request.Context(), req.UserID, email); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update email"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"res": gin.H{"userId": req.UserID, "email": email}})
 }
 
 // updateCrewRole sets a crew login's role: member (shown as "Crew"),
@@ -1819,6 +1905,7 @@ func (h *Handler) getChildUsers(c *gin.Context) {
 			UserType:    "child",
 			CrewShift:   child.CrewShift,
 			Role:        role,
+			Email:       child.Email,
 			CreatedAt:   child.CreatedAt.Format(time.RFC3339),
 		})
 	}
@@ -1930,6 +2017,7 @@ func Routes(router *gin.Engine, h *Handler, jwtAuth *jwt.GinJWTMiddleware, multi
 		userRoutes.PUT("/subaccounts/password", h.updateChildPassword)
 		userRoutes.PUT("/subaccounts/shift", h.updateCrewShift)
 		userRoutes.PUT("/subaccounts/role", h.updateCrewRole)
+		userRoutes.PUT("/subaccounts/email", h.updateCrewEmail)
 		userRoutes.DELETE("/subaccounts/:id", h.deleteChildUser)
 	}
 

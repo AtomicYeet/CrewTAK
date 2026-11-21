@@ -195,13 +195,19 @@ func (r *UserRepository) UpdateCrewShift(c context.Context, userID int, shift st
 	return r.db.WithContext(c).Model(&uModel.User{}).Where("id = ?", userID).Update("crew_shift", shift).Error
 }
 
+// UpdateEmail sets a user's email ("" clears it). CrewTAK: set from the
+// Crew Users page.
+func (r *UserRepository) UpdateEmail(c context.Context, userID int, email string) error {
+	return r.db.WithContext(c).Model(&uModel.User{}).Where("id = ?", userID).Update("email", email).Error
+}
+
 func (r *UserRepository) UpdateUserCircle(c context.Context, userID, circleID int) error {
 	return r.db.WithContext(c).Model(&uModel.User{}).Where("id = ?", userID).Update("circle_id", circleID).Error
 }
 
 func (r *UserRepository) FindByEmail(c context.Context, email string) (*uModel.UserDetails, error) {
 	var user *uModel.UserDetails
-	if err := r.db.WithContext(c).Table("users u").Select("u.*, c.webhook_url as webhook_url").Joins("left join circles c on c.id = u.circle_id").Where("email = ?", email).First(&user).Error; err != nil {
+	if err := r.db.WithContext(c).Table("users u").Select("u.*, c.webhook_url as webhook_url").Joins("left join circles c on c.id = u.circle_id").Where("u.email != '' AND LOWER(u.email) = LOWER(?)", strings.TrimSpace(email)).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return user, nil
