@@ -52,6 +52,13 @@ type UserCircleDetail struct {
 	TargetID         string                      `json:"-" gorm:"column:target_id"` // Target ID
 	Image            string                      `json:"image" gorm:"column:image"` // Image
 	CrewShift        string                      `json:"crewShift" gorm:"column:crew_shift"`
+	// CrewTAK: rank, qualifications (comma-separated codes) and hire date
+	// (YYYY-MM-DD), read-only here; set on Settings → Crew Users.
+	CrewRank  string `json:"crewRank" gorm:"column:crew_rank"`
+	CrewQuals string `json:"crewQuals" gorm:"column:crew_quals"`
+	HireDate  string `json:"hireDate" gorm:"column:hire_date"`
+	// CrewTAK: 0 = the original account owner (APSadmin), 1 = crew login.
+	UserType int `json:"userType" gorm:"column:user_type"`
 }
 
 type Role string

@@ -23,6 +23,13 @@ type User struct {
 	// CrewTAK: which crew group the person belongs to (A, B, C, OPS, CHIEF;
 	// empty when not set). Shown under their name on profiles.
 	CrewShift string `json:"crewShift" gorm:"column:crew_shift;default:''"`
+	// CrewTAK: rank (one of CrewRanks; empty when not set).
+	CrewRank string `json:"crewRank" gorm:"column:crew_rank;default:''"`
+	// CrewTAK: qualifications (seats the person can fill), stored as a
+	// comma-separated list of CrewQualifications codes in canonical order.
+	CrewQuals string `json:"crewQuals" gorm:"column:crew_quals;default:''"`
+	// CrewTAK: hire date as YYYY-MM-DD (empty when not set). Drives seniority.
+	HireDate string `json:"hireDate" gorm:"column:hire_date;default:''"`
 	// Parent-Child relationship fields
 	ParentUserID *int     `json:"parentUserId,omitempty" gorm:"column:parent_user_id;index"`
 	UserType     UserType `json:"userType" gorm:"column:user_type;default:0"`
@@ -291,4 +298,105 @@ func NormalizeCrewShift(s string) (string, bool) {
 	default:
 		return "", false
 	}
+}
+
+// CrewRanks are the ranks a person can hold, in display order. Keep in step
+// with CREW_RANKS in the frontend's src/crewtak/crewRank.js.
+var CrewRanks = []string{
+	"PROBIE",
+	"FIREFIGHTER",
+	"DRIVER_OPERATOR",
+	"ACTING_OFFICER",
+	"CAPTAIN",
+	"CHIEF",
+	"OPS",
+	"OPS_LEAD",
+}
+
+// CrewQualifications are the seats a person can be qualified to fill, in
+// display order. Keep in step with CREW_QUALIFICATIONS in the frontend's
+// src/crewtak/crewRank.js.
+var CrewQualifications = []string{
+	"ARFF_FF",
+	"DO_ARFF",
+	"DO_PUMPER",
+	"ACTING_OFFICER",
+	"CAPTAIN",
+	"CHIEF",
+	"EMT",
+}
+
+// NormalizeCrewRank returns the stored form of a rank ("" clears it) and
+// whether it is one of CrewRanks.
+func NormalizeCrewRank(s string) (string, bool) {
+	v := strings.ToUpper(strings.TrimSpace(s))
+	if v == "" {
+		return "", true
+	}
+	for _, r := range CrewRanks {
+		if v == r {
+			return v, true
+		}
+	}
+	return "", false
+}
+
+// NormalizeCrewQuals turns a list of qualification codes into the stored
+// comma-separated form: upper-cased, duplicates dropped, in CrewQualifications
+// order. An empty list clears it. Returns false if any code is unknown.
+func NormalizeCrewQuals(quals []string) (string, bool) {
+	want := map[string]bool{}
+	for _, q := range quals {
+		v := strings.ToUpper(strings.TrimSpace(q))
+		if v == "" {
+			continue
+		}
+		known := false
+		for _, k := range CrewQualifications {
+			if v == k {
+				known = true
+				break
+			}
+		}
+		if !known {
+			return "", false
+		}
+		want[v] = true
+	}
+	out := []string{}
+	for _, k := range CrewQualifications {
+		if want[k] {
+			out = append(out, k)
+		}
+	}
+	return strings.Join(out, ","), true
+}
+
+// SplitCrewQuals turns the stored comma-separated qualifications back into a
+// list (never nil, so it serialises as []).
+func SplitCrewQuals(stored string) []string {
+	out := []string{}
+	for _, q := range strings.Split(stored, ",") {
+		if q = strings.TrimSpace(q); q != "" {
+			out = append(out, q)
+		}
+	}
+	return out
+}
+
+// NormalizeHireDate checks a hire date typed as YYYY-MM-DD ("" clears it).
+// Dates before 1950 or more than a year ahead are rejected as typos.
+func NormalizeHireDate(s string) (string, bool) {
+	v := strings.TrimSpace(s)
+	if v == "" {
+		return "", true
+	}
+	d, err := time.Parse("2006-01-02", v)
+	if err != nil {
+		return "", false
+	}
+	if d.Year() < 1950 || d.After(time.Now().AddDate(1, 0, 0)) {
+		return "", false
+	}
+	return d.Format("2006-01-02"), true
 }

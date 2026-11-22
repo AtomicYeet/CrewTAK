@@ -1484,7 +1484,35 @@ type CreateChildUserRequest struct {
 	Role string `json:"role"`
 	// Optional email, for future notifications and password resets.
 	Email string `json:"email"`
+	// Optional rank, qualifications and hire date (YYYY-MM-DD).
+	CrewRank       string   `json:"crewRank"`
+	Qualifications []string `json:"qualifications"`
+	HireDate       string   `json:"hireDate"`
 }
+
+// UpdateCrewRankRequest sets (or, when empty, clears) someone's rank.
+type UpdateCrewRankRequest struct {
+	UserID   int    `json:"userId" binding:"required"`
+	CrewRank string `json:"crewRank"`
+}
+
+// UpdateCrewQualsRequest replaces someone's qualifications (empty clears).
+type UpdateCrewQualsRequest struct {
+	UserID         int      `json:"userId" binding:"required"`
+	Qualifications []string `json:"qualifications"`
+}
+
+// UpdateHireDateRequest sets (or, when empty, clears) someone's hire date.
+type UpdateHireDateRequest struct {
+	UserID   int    `json:"userId" binding:"required"`
+	HireDate string `json:"hireDate"`
+}
+
+const (
+	errCrewRank     = "Unknown rank"
+	errCrewQuals    = "Unknown qualification"
+	errCrewHireDate = "Hire date must be a real date (YYYY-MM-DD)"
+)
 
 // UpdateCrewRoleRequest sets someone's crew role (member, manager, admin).
 type UpdateCrewRoleRequest struct {
@@ -1557,6 +1585,10 @@ type ChildUserResponse struct {
 	Role        string `json:"role"`
 	Email       string `json:"email"`
 	CreatedAt   string `json:"createdAt"`
+	// CrewTAK: rank, qualifications and hire date (YYYY-MM-DD).
+	CrewRank       string   `json:"crewRank"`
+	Qualifications []string `json:"qualifications"`
+	HireDate       string   `json:"hireDate"`
 }
 
 // crewManager returns the signed-in (non-impersonated) user if they may
@@ -1650,6 +1682,21 @@ func (h *Handler) createChildUser(c *gin.Context) {
 		c.JSON(http.StatusConflict, gin.H{"error": "That email is already used by another account"})
 		return
 	}
+	crewRank, okRank := uModel.NormalizeCrewRank(req.CrewRank)
+	if !okRank {
+		c.JSON(http.StatusBadRequest, gin.H{"error": errCrewRank})
+		return
+	}
+	crewQuals, okQuals := uModel.NormalizeCrewQuals(req.Qualifications)
+	if !okQuals {
+		c.JSON(http.StatusBadRequest, gin.H{"error": errCrewQuals})
+		return
+	}
+	hireDate, okHire := uModel.NormalizeHireDate(req.HireDate)
+	if !okHire {
+		c.JSON(http.StatusBadRequest, gin.H{"error": errCrewHireDate})
+		return
+	}
 
 	encodedPassword, err := auth.EncodePassword(req.Password)
 	if err != nil {
@@ -1666,6 +1713,9 @@ func (h *Handler) createChildUser(c *gin.Context) {
 		UserType:     uModel.UserTypeChild,
 		Provider:     uModel.AuthProviderDonetick,
 		CrewShift:    crewShift,
+		CrewRank:     crewRank,
+		CrewQuals:    crewQuals,
+		HireDate:     hireDate,
 		Email:        email,
 		CreatedAt:    time.Now().UTC(),
 		UpdatedAt:    time.Now().UTC(),
@@ -1703,6 +1753,10 @@ func (h *Handler) createChildUser(c *gin.Context) {
 		Role:        string(role),
 		Email:       createdUser.Email,
 		CreatedAt:   createdUser.CreatedAt.Format(time.RFC3339),
+
+		CrewRank:       createdUser.CrewRank,
+		Qualifications: uModel.SplitCrewQuals(createdUser.CrewQuals),
+		HireDate:       createdUser.HireDate,
 	}})
 }
 
@@ -1765,6 +1819,85 @@ func (h *Handler) updateCrewShift(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"res": gin.H{"userId": req.UserID, "crewShift": shift}})
+}
+
+// updateCrewRank sets or clears a crew login's rank. Crew admins only, same
+// as the other Crew Users actions.
+func (h *Handler) updateCrewRank(c *gin.Context) {
+	manager, ok := h.crewManager(c)
+	if !ok {
+		return
+	}
+	var req UpdateCrewRankRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	rank, valid := uModel.NormalizeCrewRank(req.CrewRank)
+	if !valid {
+		c.JSON(http.StatusBadRequest, gin.H{"error": errCrewRank})
+		return
+	}
+	if _, ok := h.managedCrewUser(c, manager, req.UserID); !ok {
+		return
+	}
+	if err := h.userRepo.UpdateCrewRank(c.Request.Context(), req.UserID, rank); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update rank"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"res": gin.H{"userId": req.UserID, "crewRank": rank}})
+}
+
+// updateCrewQuals replaces a crew login's qualifications. Crew admins only.
+func (h *Handler) updateCrewQuals(c *gin.Context) {
+	manager, ok := h.crewManager(c)
+	if !ok {
+		return
+	}
+	var req UpdateCrewQualsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	quals, valid := uModel.NormalizeCrewQuals(req.Qualifications)
+	if !valid {
+		c.JSON(http.StatusBadRequest, gin.H{"error": errCrewQuals})
+		return
+	}
+	if _, ok := h.managedCrewUser(c, manager, req.UserID); !ok {
+		return
+	}
+	if err := h.userRepo.UpdateCrewQuals(c.Request.Context(), req.UserID, quals); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update qualifications"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"res": gin.H{"userId": req.UserID, "qualifications": uModel.SplitCrewQuals(quals)}})
+}
+
+// updateHireDate sets or clears a crew login's hire date. Crew admins only.
+func (h *Handler) updateHireDate(c *gin.Context) {
+	manager, ok := h.crewManager(c)
+	if !ok {
+		return
+	}
+	var req UpdateHireDateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	hireDate, valid := uModel.NormalizeHireDate(req.HireDate)
+	if !valid {
+		c.JSON(http.StatusBadRequest, gin.H{"error": errCrewHireDate})
+		return
+	}
+	if _, ok := h.managedCrewUser(c, manager, req.UserID); !ok {
+		return
+	}
+	if err := h.userRepo.UpdateHireDate(c.Request.Context(), req.UserID, hireDate); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update hire date"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"res": gin.H{"userId": req.UserID, "hireDate": hireDate}})
 }
 
 // updateCrewEmail sets or clears a crew login's email (optional; used later
@@ -1907,6 +2040,10 @@ func (h *Handler) getChildUsers(c *gin.Context) {
 			Role:        role,
 			Email:       child.Email,
 			CreatedAt:   child.CreatedAt.Format(time.RFC3339),
+
+			CrewRank:       child.CrewRank,
+			Qualifications: uModel.SplitCrewQuals(child.CrewQuals),
+			HireDate:       child.HireDate,
 		})
 	}
 
@@ -2018,6 +2155,9 @@ func Routes(router *gin.Engine, h *Handler, jwtAuth *jwt.GinJWTMiddleware, multi
 		userRoutes.PUT("/subaccounts/shift", h.updateCrewShift)
 		userRoutes.PUT("/subaccounts/role", h.updateCrewRole)
 		userRoutes.PUT("/subaccounts/email", h.updateCrewEmail)
+		userRoutes.PUT("/subaccounts/rank", h.updateCrewRank)
+		userRoutes.PUT("/subaccounts/qualifications", h.updateCrewQuals)
+		userRoutes.PUT("/subaccounts/hire-date", h.updateHireDate)
 		userRoutes.DELETE("/subaccounts/:id", h.deleteChildUser)
 	}
 

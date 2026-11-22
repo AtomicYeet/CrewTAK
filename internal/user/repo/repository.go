@@ -195,6 +195,21 @@ func (r *UserRepository) UpdateCrewShift(c context.Context, userID int, shift st
 	return r.db.WithContext(c).Model(&uModel.User{}).Where("id = ?", userID).Update("crew_shift", shift).Error
 }
 
+// UpdateCrewRank sets a user's rank ("" clears it).
+func (r *UserRepository) UpdateCrewRank(c context.Context, userID int, rank string) error {
+	return r.db.WithContext(c).Model(&uModel.User{}).Where("id = ?", userID).Update("crew_rank", rank).Error
+}
+
+// UpdateCrewQuals sets a user's qualifications (stored comma-separated).
+func (r *UserRepository) UpdateCrewQuals(c context.Context, userID int, quals string) error {
+	return r.db.WithContext(c).Model(&uModel.User{}).Where("id = ?", userID).Update("crew_quals", quals).Error
+}
+
+// UpdateHireDate sets a user's hire date (YYYY-MM-DD, "" clears it).
+func (r *UserRepository) UpdateHireDate(c context.Context, userID int, hireDate string) error {
+	return r.db.WithContext(c).Model(&uModel.User{}).Where("id = ?", userID).Update("hire_date", hireDate).Error
+}
+
 // UpdateEmail sets a user's email ("" clears it). CrewTAK: set from the
 // Crew Users page.
 func (r *UserRepository) UpdateEmail(c context.Context, userID int, email string) error {

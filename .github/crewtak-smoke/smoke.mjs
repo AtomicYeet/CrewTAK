@@ -148,6 +148,29 @@ log('login ok:', Boolean(token))
   const memberCannotEmail = await rawStatus('/users/subaccounts/email', { method: 'PUT', body: JSON.stringify({ userId: madeE?.res?.id, email: 'x@example.com' }) }, shiftToken)
   log('CREW EMAIL MEMBER CANNOT SET:', memberCannotEmail === 403 ? 'OK' : `FAIL (${memberCannotEmail})`)
 
+  // Rank, qualifications and hire date on each crew login (added 22 Nov
+  // 2026): set on create or from the Crew Users row; hire dates feed the
+  // seniority list on /schedule (read from /circles/members).
+  const madeRk = await api('/users/subaccounts', { method: 'POST', body: JSON.stringify({ childName: 'smokerank', displayName: 'Smoke Rank', password: 'rank-pass-1', crewRank: 'captain', qualifications: ['emt', 'ARFF_FF', 'EMT'], hireDate: '2012-09-15' }) }, token)
+  log('CREW RANK ON CREATE:', madeRk?.res?.crewRank === 'CAPTAIN' && JSON.stringify(madeRk?.res?.qualifications) === '["ARFF_FF","EMT"]' && madeRk?.res?.hireDate === '2012-09-15' ? 'OK' : `FAIL (${JSON.stringify(madeRk?.res)})`)
+  const badCreateRank = await rawStatus('/users/subaccounts', { method: 'POST', body: JSON.stringify({ childName: 'smokebadrank', password: 'rank-pass-1', crewRank: 'LIEUTENANT' }) }, token)
+  const setRank = await rawStatus('/users/subaccounts/rank', { method: 'PUT', body: JSON.stringify({ userId: noEmail?.res?.id, crewRank: 'ops_lead' }) }, token)
+  const badRank = await rawStatus('/users/subaccounts/rank', { method: 'PUT', body: JSON.stringify({ userId: noEmail?.res?.id, crewRank: 'GENERAL' }) }, token)
+  const setQuals = await rawStatus('/users/subaccounts/qualifications', { method: 'PUT', body: JSON.stringify({ userId: noEmail?.res?.id, qualifications: ['DO_PUMPER', 'DO_ARFF'] }) }, token)
+  const badQuals = await rawStatus('/users/subaccounts/qualifications', { method: 'PUT', body: JSON.stringify({ userId: noEmail?.res?.id, qualifications: ['PARAMEDIC'] }) }, token)
+  const setHire = await rawStatus('/users/subaccounts/hire-date', { method: 'PUT', body: JSON.stringify({ userId: noEmail?.res?.id, hireDate: '2019-03-04' }) }, token)
+  const badHire = await rawStatus('/users/subaccounts/hire-date', { method: 'PUT', body: JSON.stringify({ userId: noEmail?.res?.id, hireDate: '2019-02-30' }) }, token)
+  const listedRk = ((await api('/users/subaccounts', {}, token))?.res || []).find(u => u.id === noEmail?.res?.id)
+  log('CREW RANK SET:', setRank === 200 && listedRk?.crewRank === 'OPS_LEAD' ? 'OK' : `FAIL (${setRank} ${listedRk?.crewRank})`,
+    '| quals:', setQuals === 200 && JSON.stringify(listedRk?.qualifications) === '["DO_ARFF","DO_PUMPER"]' ? 'OK' : `FAIL (${setQuals} ${JSON.stringify(listedRk?.qualifications)})`,
+    '| hire date:', setHire === 200 && listedRk?.hireDate === '2019-03-04' ? 'OK' : `FAIL (${setHire} ${listedRk?.hireDate})`,
+    '| bad rejected:', [badCreateRank, badRank, badQuals, badHire].every(x => x === 400) ? 'OK' : `FAIL (${badCreateRank} ${badRank} ${badQuals} ${badHire})`)
+  const memberCannotRank = await rawStatus('/users/subaccounts/rank', { method: 'PUT', body: JSON.stringify({ userId: madeRk?.res?.id, crewRank: 'CHIEF' }) }, shiftToken)
+  const memberCannotHire = await rawStatus('/users/subaccounts/hire-date', { method: 'PUT', body: JSON.stringify({ userId: madeRk?.res?.id, hireDate: '2000-01-01' }) }, shiftToken)
+  log('CREW RANK MEMBER CANNOT SET:', memberCannotRank === 403 && memberCannotHire === 403 ? 'OK' : `FAIL (${memberCannotRank} ${memberCannotHire})`)
+  const membersRk = ((await api('/circles/members', {}, shiftToken))?.res || []).find(m => m.userId === madeRk?.res?.id)
+  log('CREW RANK ON MEMBERS LIST:', membersRk?.hireDate === '2012-09-15' && membersRk?.crewRank === 'CAPTAIN' && membersRk?.crewQuals === 'ARFF_FF,EMT' ? 'OK' : `FAIL (${JSON.stringify(membersRk)})`)
+
   // Crew codes / join requests and impersonation are gone (15 Nov 2026).
   // Unknown paths fall through to the web app's index.html, so "gone" means
   // the answer is not the API's JSON.
@@ -545,6 +568,12 @@ await shot('08b-crew-settings-redirect', '/settings/circle')
 log('CREW SETTINGS REDIRECT:', page.url().endsWith('/settings/subaccounts') ? 'OK' : `FAIL (${page.url()})`)
 await shot('08c-profile', '/settings/profile', { fullPage: true })
 await shot('08d-crew-users', '/settings/subaccounts', { fullPage: true })
+{
+  const rankBoxes = await page.getByTestId('crew-rank').count()
+  const qualGroups = await page.getByTestId('crew-quals').count()
+  const hireBoxes = await page.getByTestId('crew-hire-date').count()
+  log('CREW USERS RANK / QUALS / HIRE DATE:', rankBoxes > 0 && qualGroups === rankBoxes && hireBoxes === rankBoxes ? 'OK' : `FAIL (${rankBoxes} ${qualGroups} ${hireBoxes})`)
+}
 await shot('08e-crew-users-add', null, {
   before: async () => {
     await page.getByRole('button', { name: /^add user$/i }).first().click()
@@ -561,6 +590,11 @@ await shot('11-hidden-route-things', '/things')
 await shot('11b-training', '/training')
 // Work-in-progress modules (added 21 Nov 2026).
 await shot('11c-schedule', '/schedule')
+{
+  const rows = await page.getByTestId('seniority-row').count()
+  const first = await page.getByTestId('seniority-row').first().innerText().catch(() => '')
+  log('SCHEDULE SENIORITY LIST:', rows >= 2 && /Smoke Rank/.test(first) ? 'OK' : `FAIL (${rows} rows, first: ${JSON.stringify(first)})`)
+}
 await shot('11d-live-map', '/map')
 await shot('11e-extinguishers', '/extinguishers')
 for (const name of ['Schedule', 'Live Map', 'Fire Extinguishers']) {
