@@ -1,0 +1,10 @@
+URL: http://localhost:2021/resources
+
+Resources
+WIP
+
+Contacts
+
+Phone book: names, phone numbers and emails · 2 saved
+
+More resources will be added here.

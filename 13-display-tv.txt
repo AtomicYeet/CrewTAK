@@ -1,0 +1,150 @@
+URL: http://localhost:2021/display
+
+TODAY
+
+54° / 28°
+
+Mostly Cloudy
+
+TOMORROW
+
+39° / 18°
+
+Chance Snow Showers then Partly Sunny
+
+SUN, NOVEMBER 22
+
+11:32|17:32Z
+
+WAXING GIBBOUS
+
+A SHIFT · DAY 2
+
+19 Hours and 28 Minutes
+until shift change
+
+KATW METAR
+
+SPECI KATW 221705Z 30015G20KT 10SM OVC013 09/07 A2984
+
+Now 48°F
+
+28 min ago
+
+CREW OFFICER
+
+—
+
+PHONES
+
+Captain
+
+Smoke Shift
+
+FF1
+
+—
+
+FF2
+
+—
+
+Ops
+
+—
+
+WATCH · DAY 1
+
+8p – 1130p
+
+Smoke Shift
+
+1130p – 3a
+
+—
+
+3a – 7a
+
+—
+
+WATCH · DAY 2
+
+8p – 1130p
+
+—
+
+1130p – 3a
+
+Smoke Shift
+
+3a – 7a
+
+—
+
+RIG ASSIGNMENTS
+
+5181 Crash
+
+Smoke Shift
+
+5182 Crash
+
+—
+
+5184 Fire/EMS
+
+—
+
+5132 EMS
+
+—
+
+DINNER
+
+CHEF
+
+WHAT'S THE DISH?
+
+DAY 1
+
+Smoke Shift
+
+Tacos, rice and beans
+
+DAY 2
+
+—
+
+Tap to add what's for dinner
+
+AWS
+
+DAY 1
+
+—
+
+DAY 2
+
+Delta
+
+1001–1101
+
+1h
+
+BC East
+
+1121–1221
+
+NOW
+
+American
+
+1331–1431
+
+1h
+
+BC East
+
+1331–1416
+
+45m

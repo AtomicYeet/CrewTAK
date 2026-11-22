@@ -1,0 +1,39 @@
+URL: http://localhost:2021/log
+
+Completion log
+
+Sun 15 Nov 2026 00:00 – Sun 22 Nov 2026 11:30 · 2 entries
+
+CSV
+Print
+Period
+Last 7 days
+Person
+Everyone
+Shift
+All shifts
+Status
+Done and skipped
+Date	Start	End	Duration	Task	Completed by	Shift	Status	Notes
+Sun 22 Nov	11:29	11:29	00:00:04	
+
+Wash and Detail Airport 5132
+
+	Crew Test	
+A
+	
+Done
+	
+
+
+Sun 22 Nov		11:29	—	
+
+Daily Truck Inspections/SCBA Inspections
+
+	Crew Test	
+A
+	
+Done
+	
+
+All good

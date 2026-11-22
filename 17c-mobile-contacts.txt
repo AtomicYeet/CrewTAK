@@ -1,0 +1,20 @@
+URL: http://localhost:2021/resources/contacts
+
+Contacts
+Resources
+Contacts
+WIP
+Add contact
+
+Airport Ops
+
+(920) 555-0142
+
+Pam Sanders
+
+(920) 555-0199
+pam@example.com
+Overview
+Tasks
+Search
+More

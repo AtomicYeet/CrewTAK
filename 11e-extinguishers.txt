@@ -1,0 +1,8 @@
+URL: http://localhost:2021/extinguishers
+
+Fire Extinguishers
+WIP
+
+Nothing here yet
+
+Fire extinguisher tracking is coming soon.

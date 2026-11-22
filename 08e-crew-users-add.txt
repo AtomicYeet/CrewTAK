@@ -1,0 +1,197 @@
+URL: http://localhost:2021/settings/subaccounts
+
+Crew Users
+
+Add, reset and remove crew logins, and set each person's shift and role. Everyone signs in on the main login page with just their username and password.
+
+Add User
+
+Crew Users (6)
+
+S
+
+Smoke Member
+
+Admin
+Chief
+
+Username: smokemember
+
+Add email
+Created: 11/22/2026
+Chief
+Admin
+Rank
+Hire date
+Qualifications
+ARFF FF
+D/O ARFF
+D/O Pumper
+Acting Officer
+Captain
+Chief
+EMT
+S
+
+Smoke Rank
+
+Username: smokerank
+
+Add email
+Created: 11/22/2026
+Shift
+Crew
+Captain
+Hire date
+14 yrs 2 mo
+Qualifications
+ARFF FF
+D/O ARFF
+D/O Pumper
+Acting Officer
+Captain
+Chief
+EMT
+S
+
+Smoke Role
+
+Username: smokerole
+
+Add email
+Created: 11/22/2026
+Shift
+Crew
+Rank
+Hire date
+Qualifications
+ARFF FF
+D/O ARFF
+D/O Pumper
+Acting Officer
+Captain
+Chief
+EMT
+S
+
+Smoke Shift
+
+B Shift
+
+Username: smokeshift
+
+Add email
+Created: 11/22/2026
+B Shift
+Crew
+Rank
+Hire date
+Qualifications
+ARFF FF
+D/O ARFF
+D/O Pumper
+Acting Officer
+Captain
+Chief
+EMT
+S
+
+smokeemail
+
+Username: smokeemail
+
+smoke.email@example.com
+Created: 11/22/2026
+Shift
+Crew
+Rank
+Hire date
+Qualifications
+ARFF FF
+D/O ARFF
+D/O Pumper
+Acting Officer
+Captain
+Chief
+EMT
+S
+
+smokenoemail
+
+Username: smokenoemail
+
+Add email
+Created: 11/22/2026
+Shift
+Crew
+Ops Lead
+Hire date
+7 yrs 8 mo
+Qualifications
+ARFF FF
+D/O ARFF
+D/O Pumper
+Acting Officer
+Captain
+Chief
+EMT
+
+How Crew Users Work
+
+1
+
+Crew admins add users here and can reset their passwords or remove them.
+
+2
+
+Users sign in with just their username and password.
+
+3
+
+Pick a shift and a role (Crew, Manager or Admin) when you add someone. Change either later from their row.
+
+4
+
+Admins can manage Crew Users. Managers can approve, edit and delete anyone's tasks.
+
+Add Crew User
+
+Create a login for a crew member. They sign in with this username and password.
+
+Username *
+Display Name
+Email
+Optional. Used for notifications and password resets later.
+Shift
+Not set
+Role
+Crew
+Rank
+Not set
+Hire date
+Sets seniority. Optional.
+Qualifications
+ARFF FF
+D/O ARFF
+D/O Pumper
+Acting Officer
+Captain
+Chief
+EMT
+Seats this person can fill. Pick any.
+Password *
+Confirm Password *
+Cancel
+Create Account
+
+Crew
+
+Regular crew member
+
+Manager
+
+Can approve, edit and delete anyone's tasks
+
+Admin
+
+Full access, including Crew Users

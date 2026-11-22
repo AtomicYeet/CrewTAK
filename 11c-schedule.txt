@@ -1,0 +1,36 @@
+URL: http://localhost:2021/schedule
+
+Schedule
+WIP
+
+The calendar, time off, overtime and the force list are coming. For now this page has the seniority list.
+
+Seniority
+
+By hire date, earliest first. Hire dates are set on Settings → Crew Users.
+
+1
+
+Smoke Rank
+
+Captain
+
+Sep 15, 2012
+
+14 yrs 2 mo
+
+2
+
+smokenoemail
+
+Ops Lead
+
+Mar 4, 2019
+
+7 yrs 8 mo
+
+No hire date yet (4)
+
+Smoke Member, Smoke Role, Smoke Shift, smokeemail
+
+Set hire dates in Crew Users
