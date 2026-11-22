@@ -14,6 +14,7 @@ import (
 	calModel "donetick.com/core/internal/calendar/model"
 	chModel "donetick.com/core/internal/chore/model"
 	cModel "donetick.com/core/internal/circle/model"
+	crewresources "donetick.com/core/internal/crewtak/resources"
 	shiftinfo "donetick.com/core/internal/crewtak/shiftinfo"
 	filterModel "donetick.com/core/internal/filter/model"
 	lModel "donetick.com/core/internal/label/model"
@@ -72,8 +73,9 @@ func Migration(db *gorm.DB) error {
 		rwModel.RewardRedemption{},
 		bridgeModel.Settings{},
 		calModel.CalendarToken{},
-		shiftinfo.Slot{},     // CrewTAK
-		shiftinfo.AWSEvent{}, // CrewTAK
+		shiftinfo.Slot{},        // CrewTAK
+		shiftinfo.AWSEvent{},    // CrewTAK
+		crewresources.Contact{}, // CrewTAK
 	); err != nil {
 		return err
 	}

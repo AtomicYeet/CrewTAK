@@ -528,6 +528,31 @@ const awsIds = {}
     '| ended last shift:', JSON.stringify(lastShift).includes('before this shift') ? 'OK' : 'FAIL')
   log('AWS delete:', del?.res === toDelete ? 'OK' : 'FAIL', '| delete again 404:', JSON.stringify(delAgain).includes('gone') ? 'OK' : 'FAIL')
 }
+// Contacts (Resources → Contacts): create, validation, edit, list order, delete.
+{
+  const add = body => api('/crewtak/contacts', { method: 'POST', body: JSON.stringify(body) }, token)
+  const ops = await add({ name: '  Airport   Ops ', phone: '920-555-0142' })
+  const pam = await add({ name: 'Pam Sanders', email: ' Pam@Example.COM ' })
+  const gone = await add({ name: 'Delete Me', phone: '4567' })
+  const noName = await add({ name: ' ', phone: '9205550142' })
+  const nothing = await add({ name: 'Ghost' })
+  const badEmail = await add({ name: 'Bad', email: 'not-an-email' })
+  const badPhone = await add({ name: 'Bad', phone: '12' })
+  log('CONTACTS CREATE:', ops?.res?.name === 'Airport Ops' && pam?.res?.email === 'pam@example.com' && gone?.res?.id ? 'OK' : 'FAIL',
+    '| no name:', JSON.stringify(noName).includes('name') ? 'OK' : 'FAIL',
+    '| no phone/email:', JSON.stringify(nothing).includes('phone number or an email') ? 'OK' : 'FAIL',
+    '| bad email:', JSON.stringify(badEmail).includes('email') ? 'OK' : 'FAIL',
+    '| short phone:', JSON.stringify(badPhone).includes('too short') ? 'OK' : 'FAIL')
+  const edited = await api(`/crewtak/contacts/${pam?.res?.id}`, { method: 'PUT', body: JSON.stringify({ name: 'Pam Sanders', phone: '9205550199', email: 'pam@example.com' }) }, token)
+  log('CONTACTS EDIT:', edited?.res?.phone === '9205550199' ? 'OK' : 'FAIL')
+  const del = await api(`/crewtak/contacts/${gone?.res?.id}`, { method: 'DELETE' }, token)
+  const delAgain = await api(`/crewtak/contacts/${gone?.res?.id}`, { method: 'DELETE' }, token)
+  const list = (await api('/crewtak/contacts', {}, token))?.res || []
+  const names = list.map(c => c.name).join(',')
+  log('CONTACTS LIST:', names, names === 'Airport Ops,Pam Sanders' ? 'OK' : 'FAIL',
+    '| delete:', del?.res === gone?.res?.id ? 'OK' : 'FAIL',
+    '| delete again 404:', JSON.stringify(delAgain).includes('gone') ? 'OK' : 'FAIL')
+}
 // Server-side METAR.
 {
   const m = await api('/crewtak/weather/metar', {}, token)
@@ -597,7 +622,63 @@ await shot('11c-schedule', '/schedule')
 }
 await shot('11d-live-map', '/map')
 await shot('11e-extinguishers', '/extinguishers')
-for (const name of ['Schedule', 'Live Map', 'Fire Extinguishers']) {
+// Pass-On Log (placeholder) and Resources → Contacts (added 22 Nov 2026).
+await shot('11f-pass-on', '/pass-on')
+await shot('11g-resources', '/resources')
+{
+  const card = await page.getByTestId('resources-contacts').innerText().catch(() => '')
+  log('RESOURCES CONTACTS LINK:', /Contacts/.test(card) && /2 saved/.test(card) ? 'OK' : `FAIL (${JSON.stringify(card)})`)
+}
+try {
+  await page.getByTestId('resources-contacts').click()
+  await page.waitForTimeout(1500)
+  log('RESOURCES -> CONTACTS:', new URL(page.url()).pathname === '/resources/contacts' ? 'OK' : `FAIL (${page.url()})`)
+  await shot('11h-contacts', null, { wait: 500 })
+  const rows = page.locator('[data-testid^=contact-row-]')
+  const first = await rows.first().innerText().catch(() => '')
+  log('CONTACTS PAGE LIST:', (await rows.count()) === 2 && /\(920\) 555-0142/.test(first) ? 'OK' : `FAIL (${JSON.stringify(first)})`)
+  // Add through the form: an error first, then a good one.
+  await page.getByRole('button', { name: /^add contact$/i }).first().click()
+  await page.waitForTimeout(400)
+  const form = page.getByTestId('contact-form')
+  await form.getByLabel('Name').fill('TSA Checkpoint')
+  await form.getByRole('button', { name: /^add contact$/i }).click()
+  await page.waitForTimeout(400)
+  const err = await page.getByTestId('contact-error').innerText().catch(() => '')
+  log('CONTACTS FORM NEEDS PHONE/EMAIL:', /phone number or an email/.test(err) ? 'OK' : `FAIL (${JSON.stringify(err)})`)
+  await form.getByLabel('Phone').fill('1 920 555 0100 ext 12')
+  await page.screenshot({ path: `${OUT}/11i-contacts-add.png` })
+  await form.getByRole('button', { name: /^add contact$/i }).click()
+  await page.waitForTimeout(1500)
+  const tsa = rows.filter({ hasText: 'TSA Checkpoint' })
+  const tsaText = await tsa.first().innerText().catch(() => '')
+  const tel = await tsa.first().locator('a[href^="tel:"]').getAttribute('href').catch(() => '')
+  log('CONTACTS ADDED THROUGH FORM:', /\(920\) 555-0100 ext 12/.test(tsaText) && tel === 'tel:19205550100,12' ? 'OK' : `FAIL (${JSON.stringify(tsaText)} ${tel})`)
+  // Search by phone digits.
+  await page.getByLabel('Search contacts').fill('555-0100')
+  await page.waitForTimeout(300)
+  log('CONTACTS SEARCH:', (await rows.count()) === 1 ? 'OK' : `FAIL (${await rows.count()})`)
+  await page.getByLabel('Search contacts').fill('')
+  // Edit, then delete with two taps.
+  await page.getByRole('button', { name: 'Edit TSA Checkpoint' }).click()
+  await page.waitForTimeout(300)
+  await page.getByTestId('contact-form').getByLabel('Email').fill('tsa@example.gov')
+  await page.getByTestId('contact-form').getByRole('button', { name: /^save$/i }).click()
+  await page.waitForTimeout(1500)
+  const mail = await tsa.first().locator('a[href^="mailto:"]').count()
+  log('CONTACTS EDIT THROUGH PAGE:', mail === 1 ? 'OK' : 'FAIL')
+  await shot('11j-contacts-after-add', null, { wait: 300 })
+  await page.getByRole('button', { name: 'Delete TSA Checkpoint' }).click()
+  await page.waitForTimeout(300)
+  await page.getByTestId('contact-confirm-delete').click()
+  await page.waitForTimeout(1500)
+  await page.reload()
+  await page.waitForTimeout(2000)
+  log('CONTACTS DELETED THROUGH PAGE:', (await rows.filter({ hasText: 'TSA Checkpoint' }).count()) === 0 ? 'OK' : 'FAIL')
+} catch (e) {
+  log('CONTACTS page flow failed:', e.message)
+}
+for (const name of ['Schedule', 'Live Map', 'Fire Extinguishers', 'Pass-On Log', 'Resources']) {
   const inNav = await page.getByRole('link', { name: new RegExp(`^${name}$`) }).count()
   log(`${name} in side nav:`, inNav > 0 ? 'OK' : 'FAIL')
 }
@@ -757,6 +838,7 @@ await shot('15-mobile-tasks', '/tasks')
 await shot('16-mobile-create', '/tasks/create', { fullPage: true })
 await shot('17-mobile-shift-info', '/shift', { wait: 2500 })
 await shot('17b-mobile-aws', '/aws', { wait: 2500 })
+await shot('17c-mobile-contacts', '/resources/contacts', { wait: 2500 })
 
 // Words that should not appear anywhere now.
 const forbidden = ['Sub Account', 'Sub account', 'Primary Account', 'Managed Accounts', 'Recent Activities', 'Send nudge', 'Circle', 'circle', 'NFC', 'Privacy Policy', 'Terms of', 'Priority', 'Labels', 'Points', 'Notifications', 'Require approval', 'Things', 'Adaptive', 'Yearly', 'Donetick', 'Attachment', 'Privacy settings', 'Scheduling']
